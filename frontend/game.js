@@ -1000,7 +1000,7 @@ function handleTelemetryEvent(event) {
         try {
             if (window.speechSynthesis) {
                 const friendlyName = (event.attack_type || 'UNKNOWN').replace(/_/g, ' ');
-                const utt = new SpeechSynthesisUtterance(`Warning. ${friendlyName} detected. Attack neutralized.`);
+                const utt = new SpeechSynthesisUtterance(`${friendlyName} blocked.`);
                 utt.rate = 1.1; utt.pitch = 0.8;
                 window.speechSynthesis.speak(utt);
             }
