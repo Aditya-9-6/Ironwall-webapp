@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Config fields
     const epUrlInput = document.getElementById('ai-endpoint-url');
     const modelNameInput = document.getElementById('ai-model-name');
+    // Default to Ollama's /api/chat endpoint which accepts messages[] array
+    if (epUrlInput && epUrlInput.value.includes('/api/generate')) {
+        epUrlInput.value = 'http://localhost:11434/api/chat';
+    }
 
     if (!aiToggleBtn || !aiPanel) return;
 
@@ -55,48 +59,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const endpoint = epUrlInput.value.trim();
         const model = modelNameInput.value.trim();
 
-        // 3. Make API Call natively via fetch (OpenAI compatible format)
+        // 3. Make API Call — detect endpoint type from URL and send correct payload
         try {
-            // Some endpoints use /api/chat (Ollama native), some use /v1/chat/completions (LM Studio / OpenAI)
-            // We pass standard OpenAI format, which many local runners support.
-            const payload = {
-                model: model,
-                messages: chatHistoryLog,
-                temperature: 0.3,
-                max_tokens: 300
-            };
+            let response;
+            const isOllamaGenerate = endpoint.includes('/api/generate');
+            const isOllamaChat = endpoint.includes('/api/chat');
+            const isOpenAI = endpoint.includes('/v1/chat');
 
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            if (isOllamaGenerate) {
+                // Ollama /api/generate  expects: { model, prompt, stream:false }
+                const fullPrompt = chatHistoryLog
+                    .filter(m => m.role !== 'system')
+                    .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+                    .join('\n');
+                const sysPrompt = chatHistoryLog.find(m => m.role === 'system')?.content || '';
+                response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model, prompt: `${sysPrompt}\n\n${fullPrompt}\nAssistant:`, stream: false })
+                });
+            } else {
+                // Ollama /api/chat or OpenAI /v1/chat/completions both accept messages[]
+                response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model, messages: chatHistoryLog, stream: false, temperature: 0.3, max_tokens: 400 })
+                });
             }
+
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 
             const data = await response.json();
 
-            // Handle both OpenAI standard and some Ollama native return shapes
-            let replyText = "";
-            if (data.choices && data.choices[0].message) {
-                replyText = data.choices[0].message.content; // OpenAI format (LM Studio, GPT4All)
-            } else if (data.message && data.message.content) {
-                replyText = data.message.content; // Ollama native format
-            } else if (data.response) {
-                replyText = data.response; // Ollama generate format
-            } else {
-                replyText = "[Error Parsing Local LLM Response Format]";
-            }
+            // Parse response – handle all formats
+            let replyText = '';
+            if (data.message?.content) replyText = data.message.content;          // Ollama /api/chat
+            else if (data.choices?.[0]?.message?.content) replyText = data.choices[0].message.content; // OpenAI
+            else if (data.response) replyText = data.response;                    // Ollama /api/generate
+            else replyText = '[Error: Unknown LLM response format]';
 
             contentSpan.innerHTML = formatMarkdown(replyText);
-            chatHistoryLog.push({ role: "assistant", content: replyText });
-
-            // Optional voice synthesis
-            if (window.voiceSynth && window.audio && window.audio.enabled) {
-                // voiceSynth.speak(replyText.replace(/[^a-zA-Z0-9.,? ]/g, ''));
-            }
+            chatHistoryLog.push({ role: 'assistant', content: replyText });
 
         } catch (error) {
             contentSpan.innerHTML = `<span style="color:#ff1744">[CONNECTION FAILED] Unable to reach Local LLM at ${endpoint}. Please ensure the server is running.</span>`;

@@ -25,11 +25,10 @@ set IP=%IP: =%
 echo 📡 NETWORK DETECTED: %IP%
 echo.
 
-:: 1. Start the Rust Backend with AUTO-RESTART loop (uses pre-compiled binary — instant start!)
-echo [1/2] Launching Pingora + Ouroboros Engine (pre-compiled binary)...
+:: 1. Start the Rust Backend via Watchdog (auto-restarts in 1s on any crash)
+echo [1/2] Launching IronWall+ Watchdog (keeps backend alive forever)...
 taskkill /F /IM ironwall-gamethon.exe /T >nul 2>&1
-:: Launch the pre-compiled binary in a new window with a tight restart loop
-start "IronWall+ Backend [DO NOT CLOSE]" cmd /k "title IronWall+ WAF Engine && cd /d g:\My Drive\IronWall-Gamethon\backend && :loop && C:\ironwall-gamethon-target\debug\ironwall-gamethon.exe && echo [RESTARTING in 1s...] && timeout /t 1 >nul && goto loop"
+start "IronWall+ Backend [DO NOT CLOSE]" powershell -NoExit -ExecutionPolicy Bypass -File "g:\My Drive\IronWall-Gamethon\watchdog.ps1"
 
 :: 2. Start the Frontend Server
 echo [2/2] 🔷 Serving Frontend UI (Port 3000)...

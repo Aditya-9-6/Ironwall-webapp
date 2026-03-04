@@ -554,11 +554,18 @@ document.getElementById('intel-audio-btn').addEventListener('click', () => {
     const title = document.getElementById('intel-attack-name').textContent;
     const vector = document.getElementById('intel-vector').textContent;
     const mitig = document.getElementById('intel-mitigation').textContent;
-    voiceSynth.speak(`Threat Intel: ${title}. Attack Vector: ${vector}. Mitigation Strategy: ${mitig}`);
+    try {
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            const utt = new SpeechSynthesisUtterance(`Threat Intel: ${title}. Attack Vector: ${vector}. Mitigation Strategy: ${mitig}`);
+            utt.rate = 0.9; utt.pitch = 0.8;
+            window.speechSynthesis.speak(utt);
+        }
+    } catch (e) { }
 });
 
 function closeIntelModal() {
-    voiceSynth.stop();
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { }
     intelOverlay.classList.remove('open');
     setTimeout(() => intelOverlay.classList.add('hidden'), 320);
 }
