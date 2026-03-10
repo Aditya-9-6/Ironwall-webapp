@@ -27,38 +27,35 @@ jobs:
         run: |
           mkdir electron_app
           cd electron_app
-          npm init -y
-          npm install electron electron-builder rimraf
           
-          # Copy frontend files
+          # Create app directory and copy files
           mkdir app
-          xcopy "..\frontend\*" "app\" /E /I
+          xcopy "..\frontend\*" "app\" /E /I /Y
           
-          # Rename demo.html to index.html for the desktop app entry point
+          # Handle HTML redirection for Electron
           ren "app\index.html" "defense_board.html"
           ren "app\demo.html" "index.html"
           
-          # Create main.js
-          echo const { app, BrowserWindow } = require('electron') > main.js
-          echo const path = require('path') >> main.js
-          echo function createWindow () { >> main.js
-          echo   const win = new BrowserWindow({ >> main.js
-          echo     width: 1920, >> main.js
-          echo     height: 1080, >> main.js
-          echo     fullscreen: true, >> main.js
-          echo     autoHideMenuBar: true, >> main.js
-          echo     webPreferences: { nodeIntegration: true } >> main.js
-          echo   }) >> main.js
-          echo   win.loadFile('app/index.html') >> main.js
-          echo } >> main.js
-          echo app.whenReady().then(createWindow) >> main.js
+          # Generate package.json using Node (more robust than echo/pkg set)
+          echo const fs = require('fs'); > gen_pkg.js
+          echo const pkg = { >> gen_pkg.js
+          echo   name: 'ironwall-desktop', >> gen_pkg.js
+          echo   version: '1.0.0', >> gen_pkg.js
+          echo   main: 'main.js', >> gen_pkg.js
+          echo   scripts: { build: 'electron-builder --win --x64' }, >> gen_pkg.js
+          echo   build: { appId: 'com.ironwall.desktop', productName: 'IronWall Plus Demo', directories: { output: 'dist' } } >> gen_pkg.js
+          echo }; >> gen_pkg.js
+          echo fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2)); >> gen_pkg.js
+          node gen_pkg.js
           
-          # Update package.json
-          npm pkg set main="main.js"
-          npm pkg set scripts.build="electron-builder --win --x64"
-          npm pkg set build.appId="com.ironwall.desktop"
-          npm pkg set build.productName="IronWall Plus Demo"
-          npm pkg set build.directories.output="dist"
+          # Create main.js using Node
+          echo const fs = require('fs'); > gen_main.js
+          echo const code = "const { app, BrowserWindow } = require('electron'); const path = require('path'); function createWindow () { const win = new BrowserWindow({ width: 1920, height: 1080, fullscreen: true, autoHideMenuBar: true, webPreferences: { nodeIntegration: true } }); win.loadFile('app/index.html'); } app.whenReady().then(createWindow);"; >> gen_main.js
+          echo fs.writeFileSync('main.js', code); >> gen_main.js
+          node gen_main.js
+          
+          # Install dependencies
+          npm install electron electron-builder rimraf
 
       - name: Build Windows .EXE
         shell: cmd

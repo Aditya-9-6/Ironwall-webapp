@@ -35,6 +35,7 @@ jobs:
           npm init -y
           npm install @capacitor/cli @capacitor/core @capacitor/android
           
+          # Create config
           cat <<EOF > capacitor.config.json
           {
             "appId": "com.gamethon.ironwall",
@@ -44,14 +45,18 @@ jobs:
           }
           EOF
           
+          # Copy frontend files
           mkdir www
           cp -r ../frontend/* www/
           
-          # Gamethon app natively opens the mobile controller Lobby
+          # Setup mobile landing page
           mv www/index.html www/game_board.html
           mv www/lobby.html www/index.html
           
+          # Initialize Android
           npx cap add android
+          npx cap copy android
+          npx cap sync android
 
       - name: Build Android APK
         run: |
