@@ -8,10 +8,21 @@
 'use strict';
 
 // ── Constants ──────────────────────────────────────────────────────────────
-// Allow overriding WS_URL via query parameter for global tunneling (e.g. ?ws=wss://my-tunnel.loca.lt/ws)
+// Allow overriding host via query parameter from Lobby (e.g. ?host=192.168.1.14:3000)
 const urlParams = new URLSearchParams(window.location.search);
+const hostParam = urlParams.get('host');
 const wsParam = urlParams.get('ws');
-const WS_URL = wsParam ? wsParam : `ws://${window.location.hostname || '127.0.0.1'}:9001/ws`;
+
+let WS_URL;
+if (wsParam) {
+    WS_URL = wsParam;
+} else if (hostParam) {
+    // If we came from lobby, connect to the proxy port on that specific host
+    WS_URL = `ws://${hostParam}/ws`;
+} else {
+    // Fallback to current domain (if opened directly)
+    WS_URL = `ws://${window.location.host}/ws`;
+}
 const CORE_RADIUS = 54;
 const PARTICLE_COUNT = 18;
 

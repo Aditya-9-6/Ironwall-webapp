@@ -4,6 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="IronWall+">
+    <meta name="theme-color" content="#030308">
     <title>IRONWALL+ | LAUNCHER</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
@@ -79,6 +83,41 @@
             opacity: 0.6;
         }
 
+        .phone-join {
+            margin-top: 1.6rem;
+            padding: 14px 20px;
+            background: rgba(0, 245, 255, 0.04);
+            border: 1px solid rgba(0, 245, 255, 0.15);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .phone-join-label {
+            font-size: 0.55rem;
+            letter-spacing: 0.2em;
+            color: rgba(0, 245, 255, 0.5);
+            margin-bottom: 8px;
+        }
+
+        .phone-join-url {
+            font-size: 0.78rem;
+            color: #00f5ff;
+            text-shadow: 0 0 8px #00f5ff;
+            word-break: break-all;
+        }
+
+        .phone-join-link {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.62rem;
+            color: #ff1744;
+            border: 1px solid rgba(255, 23, 68, 0.4);
+            padding: 4px 14px;
+            border-radius: 4px;
+            text-decoration: none;
+            letter-spacing: 0.1em;
+        }
+
         /* CRT Scanline Effect */
         body::after {
             content: " ";
@@ -107,6 +146,12 @@
                 <br><small style="font-size: 0.6rem; opacity: 0.7;">Split-Screen (Projector Mode)</small></a>
         </div>
         <div class="status">System Ready — v3.0.0-PROD</div>
+
+        <div class="phone-join">
+            <div class="phone-join-label">📱 // JOIN FROM PHONE — SAME WI-FI</div>
+            <div class="phone-join-url" id="phone-url">http://localhost:3000</div>
+            <a class="phone-join-link" id="network-link" href="network.html">→ OPEN JOIN PAGE</a>
+        </div>
     </div>
 
     <script>
@@ -116,6 +161,12 @@
                 .then(reg => console.log('SW Registered', reg))
                 .catch(err => console.error('SW Failed', err));
         }
+        // Show server URL so judges know where to navigate on phones
+        const origin = window.location.origin;
+        const urlEl = document.getElementById('phone-url');
+        if (urlEl) urlEl.textContent = origin;
+        const netLink = document.getElementById('network-link');
+        if (netLink) netLink.href = origin + '/network.html';
     </script>
 </body>
 

@@ -1,6 +1,6 @@
 ==============================================================================
   IRONWALL+ v2.0 -- COMPLETE MANUAL
-  Gamethon 2026 Edition
+  Gamethon 2026 Edition  |  Last Updated: March 2026
 ==============================================================================
 
 TABLE OF CONTENTS
@@ -20,7 +20,8 @@ TABLE OF CONTENTS
   13. Demo Mode (demo.html)
   14. Voice Announcer (TTS)
   15. Screen Recording
-  16. Glossary of Technology
+  16. Local AI Consultant Chatbot (NEW)
+  17. Glossary of Technology
 
 
 ==============================================================================
@@ -77,10 +78,12 @@ FILES AND THEIR PURPOSE:
   frontend/attacker.html- Attacker Control Panel HTML structure
   frontend/attacker.js  - Attacker logic: modals, firing, WebSockets, TTS
   frontend/style.css    - All styling for both panels
+  frontend/chatbot.js   - Local LLM chatbot: streaming NDJSON client for Ollama
   frontend/demo.html    - Split-screen demo mode layout
   frontend/recorder.js  - Browser screen recording (MediaRecorder API)
   frontend/serve.js     - Node.js static file server (port 3000)
   backend/src/main.rs   - Rust backend: WebSocket relay + WAF detection
+  Modelfile             - Ollama model config for ironwall-ai (speed-tuned Phi-3)
   start.bat             - One-click launcher for both servers
 
 
@@ -648,7 +651,59 @@ CONVERTING TO MP4:
 
 
 ==============================================================================
-  16. GLOSSARY OF TECHNOLOGY
+  16. LOCAL AI CONSULTANT CHATBOT
+==============================================================================
+
+Technology: Ollama + Phi-3-mini (running locally via the "ironwall-ai" model)
+No cloud. No API keys. Works 100% offline.
+
+HOW TO START THE AI:
+  1. Ensure Ollama is installed on your machine.
+  2. Run the following command ONCE to create the speed-tuned model:
+       ollama create ironwall-ai -f Modelfile
+  3. Start Ollama (it runs silently in the background).
+  4. The chatbot is now available in both the Defense Grid and the Attacker Panel.
+
+HOW TO USE:
+  - On the DEFENSE GRID: Click the [🤖 AI CONSULTANT] button in the top header.
+  - On the ATTACKER PANEL: Click the [🤖 AI] button in the score bar.
+  - A slide-in panel opens with a chat interface.
+  - Type any cybersecurity question and press SEND or hit Enter.
+  - Answers stream in token-by-token in real time (you see text appear
+    instantly, word-by-word, like ChatGPT streaming mode).
+
+THE IRONWALL-AI MODEL (speed-optimized):
+  The "ironwall-ai" Ollama model is a speed-tuned version of Phi-3-mini
+  built using the project Modelfile. Key optimizations:
+    num_predict 120  -- Hard cap on output length (forces short answers)
+    num_ctx 512      -- Small context window (dramatically faster)
+    temperature 0.1  -- Near-deterministic, fast token selection
+    top_k 10         -- Fewer sampling candidates = faster generation
+    top_p 0.5        -- Aggressive probability cutoff
+  System prompt is baked into the model itself (not sent per-request),
+  further reducing overhead.
+
+STREAMING MODE:
+  chatbot.js uses fetch() with ReadableStream and a TextDecoder to read
+  Ollama's NDJSON output line-by-line. Each token from the LLM is
+  appended to the chat bubble immediately as it arrives. A blinking cyan
+  cursor [█] indicates the model is still generating. The cursor is
+  automatically removed when generation finishes.
+
+CONFIGURATION (inside the chat panel):
+  Endpoint  : http://localhost:11434/api/chat  (Ollama default)
+  Model Name: ironwall-ai
+  Both fields are editable. For mobile access, change localhost to your
+  laptop's local IP address (found with: ipconfig).
+
+PRESENTATION TIP:
+  Ask the chatbot: "What is SQL Injection?" right after firing the SQL
+  attack button. The answer will stream in instantly, impressing judges
+  with the fully-offline AI integration.
+
+
+==============================================================================
+  17. GLOSSARY OF TECHNOLOGY
 ==============================================================================
 
 RUST
@@ -693,12 +748,19 @@ TARTARUS ENGINE
   parallel infrastructure -- a honeypot -- serving fake data, fake admin
   panels, and fake credentials, while logging every action they take.
 
-PHI-3 LLM (LOCAL)
-  Microsoft Research's highly efficient small language model. Unlike ChatGPT
-  which requires cloud connectivity, Phi-3 runs entirely ON-DEVICE with no
-  internet connection. IronWall+ uses it to generate natural-language threat
-  reports, analyze novel attack patterns, and suggest detection rule code for
-  the Ouroboros Engine.
+PHI-3 LLM (LOCAL) — MODEL: ironwall-ai
+  Microsoft Research's highly efficient small language model (3.8B params,
+  Q4 quantized GGUF format). Unlike ChatGPT which requires cloud connectivity,
+  Phi-3 runs entirely ON-DEVICE with no internet connection, no API key, and
+  no data ever leaving the machine. In IronWall+, it powers two things:
+  (1) The AI Consultant chatbot panel — answers live cybersecurity questions.
+  (2) The Ouroboros Engine — analyzes novel zero-day attack patterns and
+  generates new detection rules.
+  The model runs through Ollama under the custom model name "ironwall-ai",
+  which is pre-configured in the project Modelfile with speed optimizations
+  (512-token context, 120 max output tokens, deterministic sampling) to
+  minimize response latency. Answers stream in real-time using the browser's
+  ReadableStream API.
 
 GHOST ENGINE (WASM)
   The WebAssembly patch compiler within IronWall+. When the Ouroboros Engine
@@ -760,5 +822,6 @@ MFA / 2FA (MULTI-FACTOR AUTHENTICATION)
 
 ==============================================================================
   IronWall+ v2.0 -- Gamethon 2026
-  Built with Rust, Cloudflare Pingora, WebSockets, WebGL, Web Speech API
+  Built with Rust, Cloudflare Pingora, WebSockets, WebGL, Web Speech API,
+  Ollama (ironwall-ai / Phi-3), ReadableStream Streaming LLM
 ==============================================================================

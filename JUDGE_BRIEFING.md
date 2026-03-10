@@ -20,7 +20,7 @@ Both talk to each other over **live WebSockets** through a genuine **Rust-powere
 |---|---|---|
 | **WAF Backend** | Rust + Cloudflare **Pingora** | Sub-microsecond request inspection. Same framework Cloudflare uses in production. |
 | **Threat Engine** | Custom AST pattern parser | Detects SQLi, XSS, Path Traversal, CSRF, DDoS in real HTTP payloads. |
-| **Local AI** | **TinyLlama** via **Ollama** | Answers cyber questions 100% offline. No API key. No internet. |
+| **Local AI** | **Phi-3-mini** via **Ollama** (`ironwall-ai` model) | Answers cyber questions 100% offline. Streams tokens in real-time. No API key. No internet. |
 | **Frontend** | Vanilla JS + WebGL canvas | 60fps particle defense grid, laser blast animations, world map pings. |
 | **Tunneling** | Localtunnel / Ngrok | Expose the demo to any phone globally in one click. |
 
@@ -34,7 +34,7 @@ Both talk to each other over **live WebSockets** through a genuine **Rust-powere
 4. **Level-Up System** → Hacker gains EXP and unlocks more dangerous attacks (Ransomware, Zero-Day).
 5. **Phishing Simulator** → Fake urgent corporate emails spawn mid-game. Identifies whether user clicks a bad link.
 6. **Vulnerability Quiz** → After a threat is blocked, system prompts: *"How do you patch this?"*
-7. **AI Consultant** → Floating chat panel powered by a local LLM. Ask it anything about the threats being fired.
+7. **AI Consultant** → Floating chat panel powered by the local `ironwall-ai` Ollama model (Phi-3-mini, Q4). Ask it anything about the threats being fired. Responses **stream in real-time** token-by-token — no waiting.
 
 ---
 
@@ -42,7 +42,8 @@ Both talk to each other over **live WebSockets** through a genuine **Rust-powere
 
 - **Detection latency:** ~50 microseconds per payload *(measured on-device)*
 - **Throughput:** Capable of 10,000+ requests/second on the demo laptop
-- **AI model size:** ~630MB (fits comfortably in 8GB RAM alongside the game)
+- **AI model:** Phi-3-mini Q4 GGUF — `ironwall-ai` Ollama model (~2.3GB)
+- **AI response UX:** First token in ~1s (streaming), full answer in 5–15s
 - **Backend RAM usage:** <50MB for the entire Rust WAF engine
 - **Lines of code:** 13,500+ across Rust backend + JS frontend
 
@@ -65,4 +66,4 @@ The Rust backend is a **fully functional reverse proxy**. If you replace the dem
 
 ---
 
-*Built for Gamethon · Rust 1.75 · Cloudflare Pingora · Phi-3/TinyLlama Local LLM · WebAssembly eBPF concepts · GitHub: [Aditya-9-6/ironwall-game](https://github.com/Aditya-9-6/ironwall-game)*
+*Built for Gamethon · Rust 1.75 · Cloudflare Pingora · Phi-3-mini Local LLM (ironwall-ai / Ollama) · Streaming ReadableStream · WebAssembly eBPF concepts · GitHub: [Aditya-9-6/ironwall-game](https://github.com/Aditya-9-6/ironwall-game)*

@@ -2950,3 +2950,133 @@ mark.danger-token {
   cursor: not-allowed;
   box-shadow: none;
 }
+
+/* ── Streaming cursor animation ── */
+.stream-cursor {
+  display: inline-block;
+  color: #00f5ff;
+  text-shadow: 0 0 8px #00f5ff;
+  margin-left: 2px;
+  animation: blink-cursor 0.7s step-end infinite;
+  font-size: 0.85em;
+  vertical-align: middle;
+}
+
+@keyframes blink-cursor {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+
+/* =================================================================
+   CROSS-DEVICE RESPONSIVE BREAKPOINTS - v2.0
+   Tablet · Mobile · Landscape · Touch device support
+================================================================= */
+
+/* -- Tablet (<=900px): compress header and HUD ------------------- */
+@media (max-width: 900px) {
+  #header {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 48px;
+    padding: 6px 12px;
+    gap: 4px;
+  }
+  #header .status-badge { display: none; }
+  .record-btn {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    margin: 0 3px;
+  }
+  #hud {
+    grid-template-columns: repeat(2, 1fr);
+    height: auto;
+    padding: 8px 12px;
+    gap: 6px;
+  }
+  .hud-value { font-size: 1rem; }
+  #world-map-container { height: 100px; }
+  #threat-log { width: 200px; }
+  .ai-debrief { width: 290px; }
+}
+
+/* -- Mobile (<=600px): full phone layout ----------------------- */
+@media (max-width: 600px) {
+  #app { grid-template-rows: auto auto 1fr auto; }
+  #header { justify-content: flex-start; padding: 6px 10px; gap: 5px; }
+  #header .logo { font-size: 0.85rem; letter-spacing: 0.1em; flex-shrink: 0; }
+  #voice-btn { display: none; }
+  #stats-btn, #record-btn { font-size: 0.55rem; padding: 3px 6px; margin: 0 2px; }
+  #ai-chat-toggle-btn { font-size: 0.6rem; padding: 3px 8px; margin: 0 2px; }
+  #ws-status { font-size: 0.55rem; margin-left: auto; }
+  #hud {
+    grid-template-columns: repeat(2, 1fr);
+    height: auto;
+    min-height: 60px;
+    padding: 6px 8px;
+    gap: 4px;
+  }
+  .hud-label { font-size: 0.5rem; }
+  .hud-value { font-size: 0.85rem; }
+  .network-viz { display: none; }
+  #combo-label { font-size: 1.8rem; }
+  #threat-log { width: 155px; max-height: 180px; top: 4px; right: 4px; }
+  .log-entry { font-size: 0.55rem; padding: 3px 6px; }
+  #world-map-container { height: 80px; }
+  .ai-debrief { width: calc(100% - 24px); bottom: 12px; left: 12px; }
+  #stats-panel { width: calc(100vw - 24px); left: 12px; right: 12px; top: 60px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  #code-fix-modal { width: 96vw; max-height: 90vh; overflow-y: auto; }
+  .fix-grid { grid-template-columns: 1fr !important; }
+  #glossary-panel { width: 90vw; max-height: 80vh; }
+  #quiz-modal { width: 92vw; padding: 16px; }
+  #phishing-modal { width: 92vw; padding: 14px; }
+  #ai-chat-panel { width: 96vw; right: 2vw; bottom: 80px; }
+  #matrix-stream { width: 120px; font-size: 0.45rem; }
+}
+
+/* -- Very small (<=380px) ---------------------------------------- */
+@media (max-width: 380px) {
+  #header .logo { font-size: 0.75rem; }
+  .hud-value { font-size: 0.75rem; }
+  #threat-log { width: 125px; }
+  #hud .hud-block:nth-child(3) { display: none; }
+}
+
+/* -- Landscape phone: optimize arena height ----------------------- */
+@media (max-height: 500px) and (orientation: landscape) {
+  #header { min-height: 36px; padding: 3px 10px; }
+  #hud { min-height: 44px; padding: 4px 10px; }
+  .network-viz { display: none; }
+  #world-map-container { display: none; }
+}
+
+/* -- Touch device: bigger tap targets ---------------------------- */
+@media (pointer: coarse) {
+  .record-btn {
+    min-height: 36px;
+    padding: 6px 12px;
+    touch-action: manipulation;
+  }
+  #knowledge-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 1.4rem;
+    touch-action: manipulation;
+  }
+  .quiz-opt-btn {
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+  .phish-btn {
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+}

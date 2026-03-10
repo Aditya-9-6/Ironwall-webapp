@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         aiPanel.classList.remove('open');
     });
 
-    // Send Message
+    // Send Message — STREAMING MODE
     async function handleSend() {
         const text = aiInput.value.trim();
         if (!text) return;
@@ -52,58 +52,106 @@ document.addEventListener('DOMContentLoaded', () => {
         aiSendBtn.disabled = true;
         aiInput.disabled = true;
 
-        // 2. Add empty AI Message to UI to stream into
-        const aiMsgDiv = appendMessage('ai', '<strong>SYSTEM:</strong> <span class="typing">...</span>');
-        const contentSpan = aiMsgDiv.querySelector('.typing');
+        // 2. Add empty AI bubble — we will stream tokens into it
+        const aiMsgDiv = appendMessage('ai', '<strong>SYSTEM:</strong> <span class="typing-stream"></span><span class="stream-cursor">█</span>');
+        const streamSpan = aiMsgDiv.querySelector('.typing-stream');
+        const cursor = aiMsgDiv.querySelector('.stream-cursor');
 
         const endpoint = epUrlInput.value.trim();
         const model = modelNameInput.value.trim();
+        let fullReply = '';
 
-        // 3. Make API Call — detect endpoint type from URL and send correct payload
         try {
-            let response;
             const isOllamaGenerate = endpoint.includes('/api/generate');
-            const isOllamaChat = endpoint.includes('/api/chat');
-            const isOpenAI = endpoint.includes('/v1/chat');
 
+            let body;
             if (isOllamaGenerate) {
-                // Ollama /api/generate  expects: { model, prompt, stream:false }
                 const fullPrompt = chatHistoryLog
                     .filter(m => m.role !== 'system')
                     .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
                     .join('\n');
                 const sysPrompt = chatHistoryLog.find(m => m.role === 'system')?.content || '';
-                response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model, prompt: `${sysPrompt}\n\n${fullPrompt}\nAssistant:`, stream: false })
+                body = JSON.stringify({
+                    model,
+                    prompt: `${sysPrompt}\n\n${fullPrompt}\nAssistant:`,
+                    stream: true,
+                    num_predict: 120,
+                    temperature: 0.1,
+                    top_k: 10,
+                    top_p: 0.5
                 });
             } else {
-                // Ollama /api/chat or OpenAI /v1/chat/completions both accept messages[]
-                response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model, messages: chatHistoryLog, stream: false, temperature: 0.3, max_tokens: 400 })
+                // Ollama /api/chat or OpenAI /v1/chat/completions
+                body = JSON.stringify({
+                    model,
+                    messages: chatHistoryLog,
+                    stream: true,
+                    temperature: 0.1,
+                    num_predict: 120,
+                    max_tokens: 120,
+                    top_k: 10,
+                    top_p: 0.5
                 });
             }
 
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body
+            });
+
             if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 
-            const data = await response.json();
+            // ── Stream NDJSON line-by-line ──
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
 
-            // Parse response – handle all formats
-            let replyText = '';
-            if (data.message?.content) replyText = data.message.content;          // Ollama /api/chat
-            else if (data.choices?.[0]?.message?.content) replyText = data.choices[0].message.content; // OpenAI
-            else if (data.response) replyText = data.response;                    // Ollama /api/generate
-            else replyText = '[Error: Unknown LLM response format]';
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
 
-            contentSpan.innerHTML = formatMarkdown(replyText);
-            chatHistoryLog.push({ role: 'assistant', content: replyText });
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop(); // keep incomplete last line
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed) continue;
+                    try {
+                        const json = JSON.parse(trimmed);
+
+                        // Extract token from either format
+                        let token = '';
+                        if (isOllamaGenerate) {
+                            token = json.response ?? '';             // /api/generate
+                        } else if (json.message?.content !== undefined) {
+                            token = json.message.content;            // /api/chat
+                        } else if (json.choices?.[0]?.delta?.content) {
+                            token = json.choices[0].delta.content;   // OpenAI SSE
+                        }
+
+                        if (token) {
+                            fullReply += token;
+                            streamSpan.innerHTML = formatMarkdown(fullReply);
+                            aiHistory.scrollTop = aiHistory.scrollHeight;
+                        }
+
+                        // Stop if Ollama signals done
+                        if (json.done === true) break;
+
+                    } catch (_) { /* skip malformed JSON lines */ }
+                }
+            }
+
+            // Finalise — remove blinking cursor, save to history
+            cursor.remove();
+            chatHistoryLog.push({ role: 'assistant', content: fullReply });
 
         } catch (error) {
-            contentSpan.innerHTML = `<span style="color:#ff1744">[CONNECTION FAILED] Unable to reach Local LLM at ${endpoint}. Please ensure the server is running.</span>`;
-            console.error("Local LLM Error:", error);
+            cursor.remove();
+            streamSpan.innerHTML = `<span style="color:#ff1744">[CONNECTION FAILED] Unable to reach Local LLM at ${endpoint}. Is Ollama running?</span>`;
+            console.error("Local LLM Stream Error:", error);
         } finally {
             aiSendBtn.disabled = false;
             aiInput.disabled = false;

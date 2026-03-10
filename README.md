@@ -1,6 +1,6 @@
 # ⚡ IronWall+ — Gamethon Demo
 
-> Real-time cyberpunk network defense game. Judges attack, IronWall blocks, the crowd watches.
+> Real-time cyberpunk network defense game. Judges attack, IronWall blocks, the crowd watches. Now with local streaming AI.
 
 ---
 
@@ -55,23 +55,36 @@ IronWall+ is uniquely gamified for an engaging hackathon presentation:
 
 | Button | Attack Type | Severity |
 |--------|-------------|---------|
-| 💉 SQL Injection | `SQL_INJECTION` | 85 |
-| 🌊 DDoS Swarm | `DDOS_SWARM` | 95 |
+| 💉 SQL: Tautology | `SQL_INJECTION` | 85 |
+| 🔗 SQL: Union-Based | `SQL_INJECTION` | 90 |
+| ⏱ SQL: Blind/Time | `SQL_INJECTION` | 82 |
+| 🕸️ XSS: Reflected | `XSS_INJECTION` | 80 |
+| 💾 XSS: Stored | `XSS_INJECTION` | 95 |
+| 📂 Path Traversal (Linux) | `PATH_TRAVERSAL` | 75 |
+| 🪟 Path Traversal (Windows) | `PATH_TRAVERSAL` | 75 |
+| 🌊 DDoS: SYN Flood | `DDOS_SWARM` | 95 |
+| 🔊 DDoS: UDP Amp | `DDOS_SWARM` | 98 |
 | ☢️ Zero-Day Mutator | `ZERO_DAY_MUTATOR` | 100 |
+| 🌌 Mirror Probe | `MIRROR_PROBE` | 60 |
+| 🎣 Phishing | (simulator) | — |
 
 ## Folder Structure
 ```
 gamethon-demo/
-├── .cargo/config.toml   ← 2-thread compile, sccache
+├── Modelfile               ← Ollama ironwall-ai model config (speed-tuned Phi-3)
+├── .cargo/config.toml      ← 2-thread compile, sccache
 ├── backend/
 │   ├── Cargo.toml
-│   └── src/main.rs      ← Pingora + ThreatDictionary + axum WS
+│   └── src/main.rs         ← Pingora + ThreatDictionary + axum WS
 └── frontend/
-    ├── index.html        ← Game Board
-    ├── attacker.html     ← Judge Mobile Controller
-    ├── game.js           ← Canvas engine + WebGL glitch + scoring
-    ├── attacker.js       ← Button → WS firing mechanism
-    └── style.css         ← Cyberpunk CRT aesthetic
+    ├── index.html           ← Game Board (Defense Grid)
+    ├── attacker.html        ← Judge Mobile Controller
+    ├── demo.html            ← Split-screen presentation mode
+    ├── game.js              ← Canvas engine + WebGL glitch + scoring
+    ├── attacker.js          ← Button → WS firing mechanism
+    ├── chatbot.js           ← Streaming LLM client (Ollama NDJSON)
+    ├── recorder.js          ← Browser screen recording
+    └── style.css            ← Cyberpunk CRT aesthetic
 ```
 
 > **Note:** This is a standalone hackathon demo. It does NOT modify the main `ironwall-plus/ironwall_rust` production codebase.

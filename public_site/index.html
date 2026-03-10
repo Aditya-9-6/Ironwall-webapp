@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IronWall+ | Next-Gen AI Threat Defense</title>
+    <meta name="description"
+        content="Download the IronWall+ Gamethon APK and experience real-time AI-powered network defense.">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Neural Network Particle Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- CRT Overlay & Scanlines -->
+    <div class="crt-overlay"></div>
+    <div class="scanlines"></div>
+
+    <!-- Navigation -->
+    <nav class="cyber-nav">
+        <div class="nav-logo glow-text">IRONWALL<span class="plus">+</span></div>
+        <div class="nav-links">
+            <a href="#specs" class="nav-link">SYSTEM SPECS</a>
+            <a href="#download" class="nav-btn glow-btn">GET APK</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <div class="badge fade-in-up delay-1">GAMETHON 2026 EXCLUSIVE</div>
+
+            <h1 class="glitch-title fade-in-up delay-2" data-text="ABSOLUTE SYSTEM SUPREMACY">ABSOLUTE SYSTEM SUPREMACY
+            </h1>
+
+            <p class="hero-subtitle fade-in-up delay-3">
+                Experience the first real-time AI-powered cyberpunk network defense simulator.
+                Host the grid on your laptop, and command the Red or Blue team straight from your mobile device.
+            </p>
+
+            <div class="hero-actions fade-in-up delay-4">
+                <a href="#download" class="cyber-btn primary-btn">
+                    <span class="btn-glitch"></span>
+                    <span class="btn-text">INITIALIZE DOWNLOAD</span>
+                </a>
+                <a href="#specs" class="cyber-btn secondary-btn">
+                    <span class="btn-text">VIEW INTEL</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Specifications Section -->
+    <section id="specs" class="specs-section">
+        <div class="section-title-wrap">
+            <h2 class="section-title glow-text">// SYSTEM SPECIFICATIONS</h2>
+            <div class="title-line"></div>
+        </div>
+
+        <div class="specs-grid">
+            <!-- Card 1 -->
+            <div class="spec-card float-anim delay-1">
+                <div class="card-icon heartbeat">⚡</div>
+                <h3 class="card-title">Real-Time WebSockets</h3>
+                <p class="card-desc">Zero latency. Instant cross-device synchronization pulling full Duplex
+                    bi-directional streams at 144Hz.</p>
+                <div class="card-border"></div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="spec-card float-anim delay-2">
+                <div class="card-icon rotate">🧠</div>
+                <h3 class="card-title">FluxGate AI Engine</h3>
+                <p class="card-desc">Semantic intelligence layer instantly analyzes attack vectors in nanoseconds with
+                    zero-copy eBPF routing.</p>
+                <div class="card-border"></div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="spec-card float-anim delay-3">
+                <div class="card-icon glitch-icon">🛡️</div>
+                <h3 class="card-title">Cross-Platform APK</h3>
+                <p class="card-desc">Seamless Wi-Fi Lobby discovery via a secure 4-digit code. Pure PWA standard
+                    disguised inside an Android wrapper.</p>
+                <div class="card-border"></div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="spec-card float-anim delay-4">
+                <div class="card-icon blink">☠️</div>
+                <h3 class="card-title">Tartarus Mirror</h3>
+                <p class="card-desc">Redirect attackers into isolated holographics honeypots seamlessly using the V3.0
+                    God Protocol.</p>
+                <div class="card-border"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download CTA Section -->
+    <section id="download" class="download-section">
+        <div class="download-box pulse-border">
+            <div class="scanner-laser"></div>
+            <h2 class="glitch-text-sm" data-text="ACQUIRE MOBILE PAYLOAD">ACQUIRE MOBILE PAYLOAD</h2>
+            <p>Deploy the IronWall+ Operations Grid to your Android device.</p>
+
+            <div class="apk-info">
+                <span>Version: v3.0 // God Protocol</span>
+                <span>Size: ~12 MB</span>
+                <span>Requires: Android 11+</span>
+            </div>
+
+            <!-- In a real deployment, href points to the actual APK url on S3/Render/GitHub Releases -->
+            <a href="ironwall-gamethon.apk" class="cyber-btn primary-btn massive-btn" download>
+                <span class="btn-glitch"></span>
+                <span class="btn-text">⬇ DOWNLOAD APK</span>
+            </a>
+            <div class="sys-msg typing-effect">Waiting for operator authorization...</div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-divider"></div>
+        <p>IRONWALL+ DEMONSTRATION // BUILT FOR GAMETHON // SYSTEM: ONLINE</p>
+    </footer>
+
+    <!-- Interactive Background Scripts -->
+    <script>
+        // Matrix / Neural Net Canvas Background
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particlesArray = [];
+        const numParticles = 80;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+                this.color = Math.random() > 0.5 ? 'rgba(0, 245, 255, 0.8)' : 'rgba(255, 23, 68, 0.5)';
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            for (let i = 0; i < numParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+
+                // Draw connecting lines
+                for (let j = i; j < particlesArray.length; j++) {
+                    const dx = particlesArray[i].x - particlesArray[j].x;
+                    const dy = particlesArray[i].y - particlesArray[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 245, 255, ${1 - dist / 120})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                        ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particlesArray = [];
+            init();
+        });
+
+        init();
+        animate();
+
+        // Reveal animations on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.spec-card, .download-box, .section-title-wrap').forEach(el => observer.observe(el));
+    </script>
+</body>
+
+</html>

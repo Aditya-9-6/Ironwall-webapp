@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#030308">
+    <title>⚡ IronWall+ | Connect</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Lobby Specific Styles ── */
+        body {
+            background: radial-gradient(ellipse at 50% 30%, rgba(0, 245, 255, 0.06) 0%, transparent 65%), #030308;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .lobby-container {
+            width: 100%;
+            max-width: 480px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .logo-box {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 20px var(--neon-cyan);
+            letter-spacing: 0.15em;
+        }
+
+        .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            letter-spacing: 0.3em;
+            margin-top: 5px;
+        }
+
+        /* Step 1: Connect Panel */
+        .panel {
+            background: rgba(0, 245, 255, 0.03);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 16px;
+            padding: 30px 24px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .panel.hidden {
+            display: none;
+        }
+
+        .panel-title {
+            font-size: 0.8rem;
+            color: var(--neon-cyan);
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 0.1em;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .code-input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 245, 255, 0.3);
+            color: var(--neon-cyan);
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            text-align: center;
+            width: 180px;
+            height: 70px;
+            border-radius: 12px;
+            letter-spacing: 0.2em;
+            transition: border-color 0.2s;
+        }
+
+        .code-input:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
+        }
+
+        .connect-btn {
+            background: rgba(0, 245, 255, 0.1);
+            border: 1.5px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1rem;
+            padding: 14px 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .connect-btn:active {
+            transform: scale(0.96);
+        }
+
+        .divider {
+            margin: 24px 0;
+            text-align: center;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .manual-ip-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-family: monospace;
+            padding: 12px;
+            width: 100%;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        /* Step 2: Role Selection */
+        .role-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .role-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 24px;
+            border-radius: 14px;
+            border: 1.5px solid;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .role-card:active {
+            transform: scale(0.97);
+        }
+
+        .role-card.defender {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 245, 255, 0.05);
+        }
+
+        .role-card.attacker {
+            border-color: var(--neon-red);
+            background: rgba(255, 23, 68, 0.05);
+        }
+
+        .role-icon {
+            font-size: 3.5rem;
+        }
+
+        .role-info {
+            flex: 1;
+        }
+
+        .role-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .role-desc {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .status-msg {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--neon-red);
+            margin-top: 15px;
+            min-height: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="lobby-container">
+
+        <div class="logo-box">
+            <div class="logo-text">IRONWALL+</div>
+            <div class="subtitle">MOBILE ARENA</div>
+        </div>
+
+        <!-- Step 1: Connect Phase -->
+        <div class="panel" id="panel-connect">
+            <div class="panel-title">// ENTER 4-DIGIT HOST CODE</div>
+
+            <div class="input-group">
+                <input type="tel" id="join-code" class="code-input" maxlength="4" placeholder="••••"
+                    autocomplete="off" />
+                <button class="connect-btn" id="btn-connect" onclick="connectHost()">CONNECT TO HOST</button>
+            </div>
+
+            <div class="status-msg" id="connect-status"></div>
+
+            <div class="divider">OR MANUAL OVERRIDE</div>
+
+            <input type="text" id="manual-ip" class="manual-ip-input" placeholder="e.g. 192.168.1.14:3000" />
+            <button class="connect-btn" style="background: transparent; font-size:0.9rem; padding: 10px;"
+                onclick="connectManual()">USE MANUAL IP</button>
+        </div>
+
+        <!-- Step 2: Role Selection Phase -->
+        <div class="panel hidden" id="panel-roles">
+            <div class="panel-title">// CONNECTION ESTABLISHED · CHOOSE ROLE</div>
+
+            <div class="role-grid">
+                <div class="role-card defender" onclick="launchRole('defender')">
+                    <div class="role-icon">🛡</div>
+                    <div class="role-info">
+                        <div class="role-title" style="color:var(--neon-cyan)">DEFENDER</div>
+                        <div class="role-desc">Monitor the grid and defend the core.</div>
+                    </div>
+                </div>
+
+                <div class="role-card attacker" onclick="launchRole('attacker')">
+                    <div class="role-icon">☠</div>
+                    <div class="role-info">
+                        <div class="role-title" style="color:var(--neon-red)">ATTACKER</div>
+                        <div class="role-desc">Fire payloads and overwhelm the system.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const BUCKET_ID = "ironwall-gamethon-2026";
+        let targetHost = ""; // Will hold the IP:PORT
+
+        async function connectHost() {
+            const code = document.getElementById('join-code').value.trim();
+            const statusEl = document.getElementById('connect-status');
+
+            if (code.length !== 4) {
+                statusEl.textContent = "Error: Invalid 4-digit code.";
+                statusEl.style.color = "var(--neon-red)";
+                return;
+            }
+
+            statusEl.textContent = "Locating host...";
+            statusEl.style.color = "var(--neon-cyan)";
+
+            try {
+                // Fetch the latest IP payload cached for this 4-digit code
+                const res = await fetch(`https://ntfy.sh/ironwall-gamethon-2026-${code}/json?poll=1`);
+                const lines = (await res.text()).trim().split('\n');
+                let foundIp = null;
+
+                // Parse the JSON-lines stream from ntfy.sh polling
+                for (const line of lines) {
+                    if (!line.trim()) continue;
+                    try {
+                        const evt = JSON.parse(line);
+                        // Make sure it's a message event with the IP string
+                        if (evt.event === 'message' && evt.message && evt.message.includes(':3000')) {
+                            foundIp = evt.message;
+                        }
+                    } catch (e) { }
+                }
+
+                if (!foundIp) {
+                    statusEl.textContent = "Error: Code not found. Has host expired?";
+                    statusEl.style.color = "var(--neon-red)";
+                    return;
+                }
+
+                targetHost = foundIp;
+
+                // Show role selection
+                document.getElementById('panel-connect').classList.add('hidden');
+                document.getElementById('panel-roles').classList.remove('hidden');
+
+            } catch (err) {
+                statusEl.textContent = "Error bridging to discovery server.";
+                statusEl.style.color = "var(--neon-red)";
+            }
+        }
+
+        function connectManual() {
+            const ip = document.getElementById('manual-ip').value.trim();
+            if (!ip) return;
+            targetHost = ip;
+
+            document.getElementById('panel-connect').classList.add('hidden');
+            document.getElementById('panel-roles').classList.remove('hidden');
+        }
+
+        function launchRole(role) {
+            if (!targetHost) return;
+
+            // Because this is an APK/PWA running locally on the phone, 
+            // the assets exist locally. We append the host as a query param.
+            // The game engine will parse ?targetHost=... and build the WS connection.
+
+            if (role === 'defender') {
+                window.location.href = `index.html?host=${encodeURIComponent(targetHost)}`;
+            } else {
+                window.location.href = `attacker.html?host=${encodeURIComponent(targetHost)}`;
+            }
+        }
+    </script>
+
+</body>
+
+</html>

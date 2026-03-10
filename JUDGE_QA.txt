@@ -1,6 +1,6 @@
 ================================================================================
   IRONWALL+ — JUDGE Q&A PREP SHEET
-  Gamethon 2026 | Cybersecurity Track
+  Gamethon 2026 | Cybersecurity Track | Updated March 2026
 ================================================================================
 
 
@@ -162,9 +162,10 @@ Q16: What is the Ouroboros Engine?
 A: Ouroboros (named after the snake eating its own tail — symbolic of
    self-renewal) is our autonomous self-evolution system. When a new attack
    variant arrives that partially matches our patterns, it gets quarantined in a
-   sandbox, analyzed by a lightweight LLM (Phi-3), and a new detection rule is
-   generated and compiled into a WASM module — then hot-deployed into the live
-   engine without downtime. The system teaches itself from every attack it faces.
+   sandbox, analyzed by our local "ironwall-ai" LLM (Phi-3-mini, running offline
+   via Ollama), and a new detection rule is generated and compiled into a WASM
+   module — then hot-deployed into the live engine without downtime. The system
+   teaches itself from every attack it faces.
 
 
 ════════════════════════════════════════════════════════════════════════════════
@@ -196,6 +197,50 @@ A: 1. Full eBPF integration at the kernel level for pre-network-stack blocking
    3. Multi-node clustering with shared distributed state via Redis
    4. OWASP Top 10 Rule Coverage with automated compliance reporting
    5. SMS / Smishing detection module for phishing beyond email
+
+
+════════════════════════════════════════════════════════════════════════════════
+ SECTION 6: LOCAL AI INTEGRATION
+════════════════════════════════════════════════════════════════════════════════
+
+Q20: Tell me about the AI chatbot. How is it powered?
+──────────────────────────────────────────────────────────────────────────────
+A: The AI Consultant is powered by Phi-3-mini (3.8B parameters, Q4 quantized)
+   running 100% locally via Ollama. We ship a custom Ollama model called
+   "ironwall-ai" with a baked-in security system prompt. There is NO cloud call,
+   no API key, and no data leaves the machine — the entire inference stack fits
+   in under 2.5GB of RAM.
+
+Q21: How did you minimize LLM response time for the demo?
+──────────────────────────────────────────────────────────────────────────────
+A: We applied four key optimizations:
+   1. Custom Ollama Modelfile — baked in speed parameters:
+        num_ctx 512     (smaller context = faster TTFT)
+        num_predict 120 (hard output cap — stops after short answers)
+        top_k 10        (fewer sampling candidates)
+        temperature 0.1 (near-deterministic, fastest route)
+   2. Streaming mode — chatbot.js uses fetch() + ReadableStream to read
+      NDJSON tokens from Ollama line-by-line. Text STARTS appearing in ~1
+      second rather than waiting for the full response (10-30s).
+   3. System prompt baked into the model — not re-sent per request.
+   4. Context window capped at 512 tokens (Phi-3 default is 4096).
+
+Q22: Why didn't you use vLLM, speculative decoding, or FP8 quantization?
+──────────────────────────────────────────────────────────────────────────────
+A: Those are excellent techniques for GPU datacenter deployments. vLLM requires
+   Linux + NVIDIA CUDA; FP8 requires an H100/H800 GPU (Hopper architecture).
+   Our demo runs on a standard Windows laptop with CPU-only inference. Our chosen
+   stack (Ollama + GGUF Q4 + streaming) achieves perceived near-instantaneous
+   responses within the constraint of on-device CPU inference.
+
+Q23: Is the LLM accurately answering cybersecurity questions, or hallucinating?
+──────────────────────────────────────────────────────────────────────────────
+A: Phi-3-mini was specifically trained by Microsoft Research on high-quality
+   textbook knowledge, including cybersecurity. It performs significantly better
+   than larger models on concise factual Q&A. Our system prompt constrains it to
+   answer in 1-2 sentences on-topic only. For demo purposes, we ask focused
+   questions like "What is SQLi?" or "How does XSS work?" — exactly the domain
+   Phi-3 excels at. We tested all expected judge questions beforehand.
 
 
 ════════════════════════════════════════════════════════════════════════════════

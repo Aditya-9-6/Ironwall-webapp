@@ -1,1 +1,12 @@
 FROM "C:\Users\om laptop house\Downloads\Phi-3-mini-4k-instruct-q4.gguf"
+
+# ── Speed Optimizations ──
+PARAMETER num_predict 120
+PARAMETER num_ctx 512
+PARAMETER temperature 0.1
+PARAMETER top_k 10
+PARAMETER top_p 0.5
+PARAMETER repeat_penalty 1.0
+
+# ── System Prompt ──
+SYSTEM """You are the IronWall+ AI Consultant, a cybersecurity AI built into a Web Application Firewall. Answer in 1-2 sentences MAX. Be concise and direct. No fluff."""

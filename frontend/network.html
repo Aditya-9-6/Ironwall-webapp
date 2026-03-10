@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>⚡ IronWall+ | Join the Game</title>
+    <meta name="description" content="IronWall+ Gamethon — scan to join as attacker or defender from your phone." />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        /* ── Network Join Page ── */
+        #network-app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            gap: 28px;
+            background: radial-gradient(ellipse at 50% 30%, rgba(0, 245, 255, 0.06) 0%, transparent 65%), var(--bg-deep);
+        }
+
+        .net-logo {
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            font-size: 1.6rem;
+            letter-spacing: 0.2em;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 24px var(--neon-cyan), 0 0 50px rgba(0, 245, 255, 0.5);
+            text-align: center;
+        }
+
+        .net-sub {
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            color: var(--text-dim);
+            text-align: center;
+            margin-top: -18px;
+        }
+
+        .net-ip-box {
+            background: rgba(0, 245, 255, 0.05);
+            border: 1px solid rgba(0, 245, 255, 0.25);
+            border-radius: 12px;
+            padding: 20px 32px;
+            text-align: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .net-ip-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.25em;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .net-ip {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 16px var(--neon-cyan);
+            word-break: break-all;
+        }
+
+        /* Role Cards */
+        .role-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+            max-width: 520px;
+        }
+
+        .role-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 20px 12px;
+            border-radius: 14px;
+            border: 1.5px solid;
+            text-decoration: none;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+            backdrop-filter: blur(6px);
+        }
+
+        .role-card:active {
+            transform: scale(0.96);
+        }
+
+        .role-card.defender {
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            background: rgba(0, 245, 255, 0.05);
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.15);
+        }
+
+        .role-card.defender:hover {
+            box-shadow: 0 0 40px rgba(0, 245, 255, 0.3);
+        }
+
+        .role-card.attacker {
+            border-color: var(--neon-red);
+            color: var(--neon-red);
+            background: rgba(255, 23, 68, 0.05);
+            box-shadow: 0 0 20px rgba(255, 23, 68, 0.15);
+        }
+
+        .role-card.attacker:hover {
+            box-shadow: 0 0 40px rgba(255, 23, 68, 0.3);
+        }
+
+        .role-icon {
+            font-size: 2.8rem;
+            line-height: 1;
+        }
+
+        .role-title {
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-align: center;
+        }
+
+        .role-desc {
+            font-size: 0.58rem;
+            text-align: center;
+            opacity: 0.65;
+            letter-spacing: 0.05em;
+        }
+
+        /* QR-like visual (text art) */
+        .qr-hint {
+            background: rgba(0, 245, 255, 0.03);
+            border: 1px solid rgba(0, 245, 255, 0.12);
+            border-radius: 10px;
+            padding: 16px 24px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .qr-hint .qr-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .qr-hint .qr-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            color: var(--text-dim);
+        }
+
+        .qr-hint .qr-url {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.72rem;
+            color: var(--neon-cyan);
+            word-break: break-all;
+            margin-top: 6px;
+        }
+
+        .status-strip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.65rem;
+            color: var(--neon-green);
+        }
+
+        .status-dot-net {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--neon-green);
+            box-shadow: 0 0 8px var(--neon-green);
+            animation: pulse-dot 1.2s ease-in-out infinite;
+        }
+
+        @media (max-width: 400px) {
+            .net-logo {
+                font-size: 1.2rem;
+            }
+
+            .net-ip {
+                font-size: 1.1rem;
+            }
+
+            .role-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="network-app">
+
+        <div class="net-logo">⚡ IRONWALL+</div>
+        <div class="net-sub">GAMETHON 2026 · CROSS-DEVICE ARENA</div>
+
+        <div class="net-ip-box">
+            <div class="net-ip-label">// SERVER ADDRESS — TYPE THIS ON YOUR DEVICE</div>
+            <div class="net-ip" id="server-ip">Loading...</div>
+        </div>
+
+        <div class="role-grid">
+            <a class="role-card defender" id="link-defender" href="index.html">
+                <div class="role-icon">🛡</div>
+                <div class="role-title">BLUE TEAM<br>DEFENDER</div>
+                <div class="role-desc">Watch the defense<br>grid in real-time</div>
+            </a>
+            <a class="role-card attacker" id="link-attacker" href="attacker.html">
+                <div class="role-icon">☠</div>
+                <div class="role-title">RED TEAM<br>ATTACKER</div>
+                <div class="role-desc">Fire attacks at<br>the IronWall core</div>
+            </a>
+        </div>
+
+        <div class="qr-hint">
+            <div class="qr-icon">📱</div>
+            <div class="qr-label">// ON YOUR PHONE · SAME WI-FI NETWORK</div>
+            <div class="qr-url" id="qr-url">http://[server-ip]:3000/attacker</div>
+        </div>
+
+        <div class="status-strip">
+            <div class="status-dot-net"></div>
+            <span>SERVER ACTIVE · ALL DEVICES WELCOME</span>
+        </div>
+
+    </div>
+
+    <script>
+        // Detect server IP from current URL and update links
+        const host = window.location.host; // e.g. "192.168.1.10:3000"
+        const base = window.location.origin; // e.g. "http://192.168.1.10:3000"
+
+        document.getElementById('server-ip').textContent = host;
+        document.getElementById('qr-url').textContent = `${base}/attacker`;
+        document.getElementById('link-defender').href = `${base}/index.html`;
+        document.getElementById('link-attacker').href = `${base}/attacker.html`;
+    </script>
+
+</body>
+
+</html>
