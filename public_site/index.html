@@ -108,31 +108,41 @@
     <section id="download" class="download-section">
         <div class="download-box pulse-border">
             <div class="scanner-laser"></div>
-            <h2 class="glitch-text-sm" data-text="ACQUIRE MOBILE PAYLOAD">ACQUIRE MOBILE PAYLOAD</h2>
-            <p>Deploy the IronWall+ Operations Grid to your Android device.</p>
+            <h2 class="glitch-text-sm" data-text="ACQUIRE DEPLOYMENT PACKAGES">ACQUIRE DEPLOYMENT PACKAGES</h2>
+            <p>Deploy the IronWall+ Operations Grid to your Command Center.</p>
 
             <div class="apk-info">
-                <span>Version: v3.0 // God Protocol</span>
-                <span>Requires: Android 11+ (Mobile/Tablet) OR Windows 10+ (Laptop)</span>
+                <span>Version: v3.1 // God Protocol</span>
+                <span>Environment: Windows (Desktop) // PWA (Mobile/Tablet)</span>
             </div>
 
             <div class="download-buttons-container"
                 style="display: flex; gap: 20px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;">
-                <!-- Mobile / Tablet APK Link -->
-                <a href="ironwall-gamethon.apk" class="cyber-btn primary-btn massive-btn" download>
-                    <span class="btn-glitch"></span>
-                    <span class="btn-text">⬇ MOBILE & TABLET (APK)</span>
-                </a>
 
                 <!-- Laptop / PC EXE Link -->
-                <a href="ironwall-gamethon-desktop.exe" class="cyber-btn secondary-btn massive-btn"
-                    style="border-color: #a855f7; color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.3);" download>
+                <a href="ironwall-gamethon-desktop.exe" class="cyber-btn primary-btn massive-btn"
+                    style="min-width: 280px;" download>
                     <span class="btn-glitch"></span>
-                    <span class="btn-text">⬇ LAPTOP & DESKTOP (EXE)</span>
+                    <span class="btn-text">⬇ WINDOWS DESKTOP (EXE)</span>
+                </a>
+
+                <!-- Mobile PWA Link -->
+                <a href="https://aditya-9-6.github.io/gameathon-model/frontend/launcher.html"
+                    class="cyber-btn secondary-btn massive-btn"
+                    style="border-color: #00f5ff; color: #00f5ff; box-shadow: 0 0 15px rgba(0,245,255,0.3); min-width: 280px;">
+                    <span class="btn-glitch"></span>
+                    <span class="btn-text">📲 LAUNCH MOBILE GRIDS (PWA)</span>
                 </a>
             </div>
 
-            <div class="sys-msg typing-effect">Waiting for operator authorization...</div>
+            <div class="mobile-note"
+                style="font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: #00f5ff; margin-top: 10px;">
+                <span class="blink">></span> Android APK build currently queued in GitHub Actions (Platform Outage).
+                Use the <strong style="text-decoration: underline;">PWA link</strong> above for the full mobile
+                experience.
+            </div>
+
+            <div class="sys-msg typing-effect">Operator authorization confirmed. Grid access granted.</div>
         </div>
     </section>
 
