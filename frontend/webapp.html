@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IRONWALL+ | COMMAND CENTER</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #030308;
+            color: #00f5ff;
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Navigation */
+        #sidebar {
+            width: 280px;
+            background: rgba(2, 2, 5, 0.95);
+            border-right: 1px solid rgba(0, 245, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .logo-area {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+        }
+
+        .logo-area h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            margin: 0;
+            color: #fff;
+            text-shadow: 0 0 10px #00f5ff;
+            letter-spacing: 2px;
+        }
+
+        .logo-area span.plus {
+            color: #ff1744;
+            text-shadow: 0 0 10px #ff1744;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: #a0a0b0;
+            padding: 20px 25px;
+            text-align: left;
+            font-family: inherit;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+            border-left: 4px solid transparent;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-btn:hover {
+            background: rgba(0, 245, 255, 0.05);
+            color: #fff;
+        }
+
+        .nav-btn.active {
+            color: #00f5ff;
+            border-left-color: #00f5ff;
+            background: rgba(0, 245, 255, 0.1);
+            text-shadow: 0 0 8px #00f5ff;
+        }
+
+        .nav-btn.active.attack {
+            color: #ff1744;
+            border-left-color: #ff1744;
+            background: rgba(255, 23, 68, 0.1);
+            text-shadow: 0 0 8px #ff1744;
+        }
+
+        .nav-btn.active.demo {
+            color: #39ff14;
+            border-left-color: #39ff14;
+            background: rgba(57, 255, 20, 0.1);
+            text-shadow: 0 0 8px #39ff14;
+        }
+
+        .status-area {
+            margin-top: auto;
+            padding: 20px;
+            font-size: 0.85rem;
+            color: rgba(0, 245, 255, 0.6);
+            border-top: 1px solid rgba(0, 245, 255, 0.1);
+            line-height: 1.5;
+        }
+
+        .status-area .online {
+            color: #39ff14;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* Main Content Container */
+        #main-content {
+            flex: 1;
+            position: relative;
+            background: #000;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: transparent;
+        }
+
+        /* Mobile Adjustments */
+        #mobile-menu-btn {
+            display: none;
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 200;
+            background: rgba(2, 2, 5, 0.8);
+            border: 1px solid #00f5ff;
+            color: #00f5ff;
+            padding: 10px 15px;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+        }
+
+        @media (max-width: 900px) {
+            #sidebar {
+                position: absolute;
+                height: 100%;
+                transform: translateX(-100%);
+            }
+
+            #sidebar.open {
+                transform: translateX(0);
+            }
+
+            #mobile-menu-btn {
+                display: block;
+            }
+
+            /* To avoid iframe catching clicks when sidebar is open */
+            #main-content::after {
+                content: '';
+                display: none;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(2px);
+                z-index: 50;
+            }
+
+            #main-content.sidebar-open::after {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <button id="mobile-menu-btn">☰ SYSTEM MENU</button>
+
+    <div id="sidebar">
+        <div class="logo-area">
+            <h1>IRONWALL<span class="plus">+</span></h1>
+            <small style="color:#00f5ff; opacity: 0.8; font-size: 0.75rem;">INTEGRATED COMMAND</small>
+        </div>
+
+        <button class="nav-btn active" data-src="index.html">
+            <span style="font-size: 1.2rem;">🛡️</span> DEFENSE CORE
+        </button>
+        <button class="nav-btn attack" data-src="attacker.html">
+            <span style="font-size: 1.2rem;">⚔️</span> ATTACK TERMINAL
+        </button>
+        <button class="nav-btn demo" data-src="demo.html">
+            <span style="font-size: 1.2rem;">⚖️</span> MASTER DEMO
+        </button>
+
+        <div style="height: 1px; background: rgba(0,245,255,0.1); margin: 10px 20px;"></div>
+
+        <button class="nav-btn" data-src="lobby.html" style="font-size: 0.9rem; padding: 15px 25px; color: #a0a0a0;">
+            <span style="font-size: 1rem;">🔌</span> NETWORK LOBBY
+        </button>
+
+        <div class="status-area">
+            CONNECTION: <span class="online">● SECURE</span><br>
+            THREAT LEVEL: STANDBY<br>
+            VERSION: v3.1 CORE
+        </div>
+    </div>
+
+    <div id="main-content">
+        <iframe id="app-frame" src="index.html"></iframe>
+    </div>
+
+    <script>
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('SW Registered', reg))
+                .catch(err => console.error('SW Failed', err));
+        }
+
+        const buttons = document.querySelectorAll('.nav-btn');
+        const frame = document.getElementById('app-frame');
+        const sidebar = document.getElementById('sidebar');
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mainContent = document.getElementById('main-content');
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active from all
+                buttons.forEach(b => b.classList.remove('active'));
+
+                // Add active to clicked (preserve specific color classes if needed)
+                btn.classList.add('active');
+
+                // Load iframe source
+                const src = btn.getAttribute('data-src');
+                frame.src = src;
+
+                // Close sidebar automatically on mobile
+                if (window.innerWidth <= 900) {
+                    sidebar.classList.remove('open');
+                    mainContent.classList.remove('sidebar-open');
+                }
+            });
+        });
+
+        // Toggle Sidebar on mobile
+        menuBtn.addEventListener('click', () => {
+            const isOpen = sidebar.classList.toggle('open');
+            mainContent.classList.toggle('sidebar-open', isOpen);
+        });
+
+        // Click outside sidebar to close on mobile
+        mainContent.addEventListener('click', () => {
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                mainContent.classList.remove('sidebar-open');
+            }
+        });
+    </script>
+</body>
+
+</html>

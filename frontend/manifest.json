@@ -2,7 +2,7 @@
   "name": "IronWall+ Gamethon",
   "short_name": "IronWall+",
   "description": "Real-time AI-powered cyberpunk network defense game. Works on all devices.",
-  "start_url": "/lobby.html",
+  "start_url": "/webapp.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",

@@ -8,7 +8,7 @@ const STATIC_ASSETS = [
     '/',
     '/index.html',
     '/attacker.html',
-    '/launcher.html',
+    '/webapp.html',
     '/network.html',
     '/style.css',
     '/game.js',
