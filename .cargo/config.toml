@@ -1,7 +1,6 @@
 [build]
-# Throttle to 2 threads — keeps laptop cool during rapid hackathon testing
-jobs = 2
-# Build target OUTSIDE Google Drive — prevents Drive sync from locking .o files (os error 32)
+# Force single job for resource-constrained cloud builds (Render Free Tier)
+jobs = 1
 
 
 # sccache speeds up rebuilds — install with: cargo install sccache
