@@ -303,9 +303,16 @@ impl ProxyHttp for IronWallProxy {
         let origin_ip = session
             .req_header()
             .headers
-            .get("x-real-ip")
+            .get("x-forwarded-for")
             .and_then(|v| v.to_str().ok())
-            .unwrap_or("10.13.37.1")
+            .and_then(|s| s.split(',').next()) // Get first IP in the chain
+            .or_else(|| {
+                session.req_header()
+                    .headers
+                    .get("x-real-ip")
+                    .and_then(|v| v.to_str().ok())
+            })
+            .unwrap_or("127.0.0.1")
             .to_string();
 
         let initial_attack = THREAT_DICT.classify(&payload);
