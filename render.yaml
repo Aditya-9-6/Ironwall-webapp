@@ -7,8 +7,6 @@ services:
     buildCommand: cd backend && cargo build --release
     startCommand: ./backend/target/release/ironwall-gamethon
     envVars:
-      - key: PORT
-        value: 9001
       - key: RUST_LOG
         value: info
 

@@ -517,11 +517,7 @@ async fn main() -> Result<()> {
         .with_state(app_state);
 
     let axum_handle = tokio::spawn(async move {
-        let port = std::env::var("PORT")
-            .ok()
-            .and_then(|p| p.parse::<u16>().ok())
-            .unwrap_or(9001);
-        let addr = format!("0.0.0.0:{}", port);
+        let addr = "0.0.0.0:9001";
         let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
         info!("🎮 axum WebSocket server listening on {}", addr);
         axum::serve(listener, app).await.unwrap();
@@ -533,12 +529,14 @@ async fn main() -> Result<()> {
         let mut server = Server::new(Some(opt)).expect("Pingora server init failed");
         server.bootstrap();
 
-        let proxy = IronWallProxy::new(tx_clone);
-        let mut proxy_service =
-            pingora_proxy::http_proxy_service(&server.configuration, proxy);
-        proxy_service.add_tcp("0.0.0.0:8080");
+        let port = std::env::var("PORT")
+            .ok()
+            .and_then(|p| p.parse::<u16>().ok())
+            .unwrap_or(8080);
+        let addr = format!("0.0.0.0:{}", port);
+        proxy_service.add_tcp(&addr);
 
-        info!("🛡️  Pingora proxy listening on 0.0.0.0:8080");
+        info!("🛡️  Pingora proxy listening on {}", addr);
         server.add_service(proxy_service);
         server.run_forever();
     });
