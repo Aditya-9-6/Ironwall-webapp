@@ -1,5 +1,5 @@
 services:
-  # 1. Rust Backend Web Service (Uses Free Tier)
+  # 1. Rust Backend Web Service (Uses Free Tier) - v1.0.1 (Triggered Sync)
   - type: web
     name: ironwall-backend
     runtime: rust
