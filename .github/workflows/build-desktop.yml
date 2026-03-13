@@ -32,6 +32,9 @@ jobs:
           mkdir app
           xcopy "..\frontend\*" "app\" /E /I /Y
           
+          # Remove problematic nested package.json to avoid electron-builder confusion
+          if exist "app\package.json" del /f /q "app\package.json"
+          
           # Handle HTML redirection for Electron
           # Use copy instead of move to avoid "file not found" errors if already renamed
           copy "app\index.html" "app\defense_board.html"
@@ -42,8 +45,10 @@ jobs:
           echo const pkg = { >> gen_pkg.js
           echo   name: 'ironwall-desktop', >> gen_pkg.js
           echo   version: '1.0.0', >> gen_pkg.js
+          echo   description: 'IronWall+ Next-Gen Defense', >> gen_pkg.js
           echo   main: 'main.js', >> gen_pkg.js
           echo   author: 'Aditya-9-6', >> gen_pkg.js
+          echo   license: 'MIT', >> gen_pkg.js
           echo   scripts: { build: 'electron-builder --win --x64' }, >> gen_pkg.js
           echo   build: { appId: 'com.ironwall.desktop', productName: 'IronWall Plus Demo', directories: { output: 'dist' }, win: { target: 'portable' } } >> gen_pkg.js
           echo }; >> gen_pkg.js

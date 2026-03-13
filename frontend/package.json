@@ -2,6 +2,8 @@
   "name": "ironwall-frontend",
   "version": "1.0.0",
   "description": "IronWall+ Frontend Assets",
+  "author": "Aditya-9-6",
+  "license": "MIT",
   "dependencies": {
     "cross-fetch": "^4.1.0",
     "node-fetch": "^3.3.2"
