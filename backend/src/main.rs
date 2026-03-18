@@ -383,6 +383,7 @@ impl ProxyHttp for IronWallProxy {
 #[derive(Clone)]
 pub struct AppState {
     pub tx: broadcast::Sender<String>,
+    pub frontend_path: String,
 }
 
 /// WebSocket upgrade handler — game board connects here
@@ -459,41 +460,61 @@ async fn handle_socket(mut socket: WebSocket, state: AppState) {
 
 /// Health check endpoint
 async fn health() -> impl IntoResponse {
-    serde_json::json!({
+    axum::Json(serde_json::json!({
         "status": "ONLINE",
         "system": "IronWall+ Gamethon Demo",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "layers": {
             "proxy": "Pingora:8080",
             "telemetry_ws": "axum:9001"
         }
-    })
-    .to_string()
+    }))
 }
 
-/// Serve a simple status page listing useful URLs
-async fn index() -> impl IntoResponse {
-    axum::response::Html(
-        r#"
-        <!DOCTYPE html>
-        <html>
-        <head><title>IronWall+ Backend</title></head>
-        <body style="background:#050510;color:#00f5ff;font-family:monospace;padding:40px">
-        <h1>⚡ IronWall+ Backend Online</h1>
-        <div style="background:#0a0a20;padding:20px;border:1px solid #00f5ff;border-radius:10px">
-            <p><strong>Status:</strong> <span style="color:#39ff14">ACTIVE</span></p>
-            <p><strong>Security Engine:</strong> Pingora Layer-1</p>
-            <p><strong>Telemetry:</strong> Axum WebSocket</p>
-        </div>
-        <div style="margin-top:20px">
-            <p style="color:#39ff14">🛡️ <a href="/index.html" style="color:#00f5ff;text-decoration:none">OPEN DEFENSE HUD →</a></p>
-            <p style="color:#ff6b35">🔴 <a href="/attacker.html" style="color:#ff6b35;text-decoration:none">OPEN RED TEAM PANEL →</a></p>
-            <p style="color:#a855f7">🎮 <a href="/unified.html" style="color:#a855f7;text-decoration:none">OPEN UNIFIED COMMAND CENTER →</a></p>
-        </div>
-        </body>
-        </html>
-        "#,
-    )
+/// Serve the main frontend index.html from the filesystem
+async fn serve_index(State(frontend_path): State<String>) -> impl IntoResponse {
+    let path = std::path::Path::new(&frontend_path).join("index.html");
+    match tokio::fs::read_to_string(path).await {
+        Ok(html) => axum::response::Html(html).into_response(),
+        Err(_) => axum::response::Html("<h1>IronWall+ Backend</h1><p>Frontend assets not found.</p>").into_response(),
+    }
+}
+
+/// Simple AI Proxy — allows browser to talk to local Ollama via the backend
+/// to bypass some Mixed Content / CORS restrictions if necessary.
+async fn ai_proxy(
+    axum::extract::Path(path): axum::extract::Path<String>,
+    req: axum::http::Request<axum::body::Body>,
+) -> impl IntoResponse {
+    let client = reqwest::Client::new();
+    let target_url = format!("http://localhost:11434/api/{}", path);
+    // Note: In cloud mode, this will still fail unless Ollama is on the server.
+    // However, it provides a consistent API structure for the demo.
+    
+    let method = req.method().clone();
+    let body = req.into_body();
+
+    let res = client.request(method, target_url)
+        .body(body)
+        .send()
+        .await;
+
+    match res {
+        Ok(resp) => {
+            let status = resp.status();
+            let body = resp.bytes().await.unwrap_or_default();
+            axum::response::Response::builder()
+                .status(status)
+                .body(axum::body::Body::from(body))
+                .unwrap()
+        }
+        Err(e) => {
+            axum::response::Response::builder()
+                .status(502)
+                .body(axum::body::Body::from(format!("AI Proxy Error: {}", e)))
+                .unwrap()
+        }
+    }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -527,13 +548,18 @@ async fn main() -> Result<()> {
     info!("📁 Serving static files from: {}", frontend_path);
 
     // ── Layer 2: axum WebSocket telemetry server ──────────────────
-    let app_state = AppState { tx: tx.clone() };
+    let app_state = AppState { 
+        tx: tx.clone(),
+        frontend_path: frontend_path.to_string(),
+    };
+    
     let app = Router::new()
-        .route("/", get(index))
+        .route("/", get(serve_index))
         .route("/ws", get(ws_handler))
         .route("/health", get(health))
+        .route("/api/ai/*path", axum::routing::any(ai_proxy))
         .nest_service("/assets", ServeDir::new(frontend_path)) 
-        .fallback_service(ServeDir::new(frontend_path).fallback(get(index))) 
+        .fallback_service(ServeDir::new(frontend_path).fallback(get(serve_index))) 
         .layer(
             CorsLayer::new()
                 .allow_origin(Any)
