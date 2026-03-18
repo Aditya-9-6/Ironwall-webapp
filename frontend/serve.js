@@ -109,16 +109,6 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-        proxyReq.on('error', (err) => {
-            console.error(`[LLM Proxy Error] ${err.message}`);
-            res.writeHead(502);
-            res.end(`Ollama connection failed: ${err.message}`);
-        });
-
-        req.pipe(proxyReq);
-        return;
-    }
-
     sendFile(targetPath);
 });
 
