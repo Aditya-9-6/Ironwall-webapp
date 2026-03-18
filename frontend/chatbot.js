@@ -14,8 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const epUrlInput = document.getElementById('ai-endpoint-url');
     const modelNameInput = document.getElementById('ai-model-name');
     // Default to Ollama's /api/chat endpoint which accepts messages[] array
-    if (epUrlInput && epUrlInput.value.includes('/api/generate')) {
-        epUrlInput.value = 'http://localhost:11434/api/chat';
+    if (epUrlInput && (!epUrlInput.value || epUrlInput.value.includes('/api/generate') || epUrlInput.value.includes('localhost:11434'))) {
+        epUrlInput.value = '/api/ai/chat';
+    }
+    if (modelNameInput && !modelNameInput.value) {
+        modelNameInput.value = 'tinyllama';
     }
 
     if (!aiToggleBtn || !aiPanel) return;

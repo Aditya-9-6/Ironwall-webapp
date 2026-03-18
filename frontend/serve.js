@@ -58,7 +58,10 @@ const server = http.createServer((req, res) => {
     if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
     let urlPath = req.url.split('?')[0];
-    let targetPath = path.join(__dirname, urlPath === '/' ? 'index.html' : urlPath);
+    // On Windows, path.join(__dirname, '/file') can jump to drive root. 
+    // We strip the leading slash to keep it relative to __dirname.
+    let relativePath = urlPath.startsWith('/') ? urlPath.slice(1) : urlPath;
+    let targetPath = path.join(__dirname, relativePath === '' ? 'index.html' : relativePath);
 
     const sendFile = (filePath) => {
         const ext = path.extname(filePath).toLowerCase();
@@ -77,22 +80,60 @@ const server = http.createServer((req, res) => {
         });
     };
 
+    // ── LLM Proxy ──
+    if (urlPath.startsWith('/api/ai/')) {
+        const ollamaPath = urlPath.replace('/api/ai', '/api');
+        const options = {
+            hostname: '127.0.0.1',
+            port: 11434,
+            path: ollamaPath + (req.url.includes('?') ? '?' + req.url.split('?')[1] : ''),
+            method: req.method,
+            headers: {
+                ...req.headers,
+                host: '127.0.0.1:11434'
+            }
+        };
+
+        const proxyReq = http.request(options, (proxyRes) => {
+            res.writeHead(proxyRes.statusCode, proxyRes.headers);
+            proxyRes.pipe(res);
+        });
+
+        proxyReq.on('error', (err) => {
+            console.error(`[LLM Proxy Error] ${err.message}`);
+            res.writeHead(502);
+            res.end(`Ollama connection failed: ${err.message}`);
+        });
+
+        req.pipe(proxyReq);
+        return;
+    }
+
     sendFile(targetPath);
 });
 
 // ── WebSocket Proxy ────────────────────────────────────────────────────────
 // Transparently tunnels WS upgrades from browser → Rust backend
 server.on('upgrade', (req, clientSocket, head) => {
+    console.log(`[WS Proxy] Upgrade request for ${req.url} from ${req.headers['host']}`);
+    
     const backendSocket = net.connect(WS_PORT, '127.0.0.1', () => {
-        // Forward the original HTTP upgrade request headers to the backend
-        backendSocket.write(
-            `GET ${req.url} HTTP/1.1\r\n` +
-            Object.entries(req.headers).map(([k, v]) => `${k}: ${v}`).join('\r\n') +
-            '\r\n\r\n'
-        );
+        // Forward the original HTTP upgrade request with 127.0.0.1 host
+        const headers = { ...req.headers };
+        headers['host'] = `127.0.0.1:${WS_PORT}`;
+
+        let headerString = `GET ${req.url} HTTP/1.1\r\n`;
+        for (const [key, value] of Object.entries(headers)) {
+            headerString += `${key}: ${value}\r\n`;
+        }
+        headerString += '\r\n'; // End of headers
+
+        backendSocket.write(headerString);
+        console.log(`[WS Proxy] Tunnelling upgrade to 127.0.0.1:${WS_PORT}`);
     });
 
-    backendSocket.on('error', () => {
+    backendSocket.on('error', (err) => {
+        console.error(`[WS Proxy Error] Backend connection failed: ${err.message}`);
         clientSocket.write('HTTP/1.1 502 Bad Gateway\r\n\r\n');
         clientSocket.destroy();
     });
@@ -101,9 +142,18 @@ server.on('upgrade', (req, clientSocket, head) => {
     clientSocket.pipe(backendSocket);
     backendSocket.pipe(clientSocket);
 
-    clientSocket.on('error', () => backendSocket.destroy());
-    backendSocket.on('close', () => clientSocket.destroy());
-    clientSocket.on('close', () => backendSocket.destroy());
+    clientSocket.on('error', (err) => {
+        console.warn(`[WS Proxy] Client socket error: ${err.message}`);
+        backendSocket.destroy();
+    });
+    backendSocket.on('close', () => {
+        console.log(`[WS Proxy] Backend socket closed`);
+        clientSocket.destroy();
+    });
+    clientSocket.on('close', () => {
+        console.log(`[WS Proxy] Client socket closed`);
+        backendSocket.destroy();
+    });
 });
 
 // ── Join Code System ───────────────────────────────────────────────────────

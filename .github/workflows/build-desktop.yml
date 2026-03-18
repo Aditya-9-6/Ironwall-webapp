@@ -23,43 +23,66 @@ jobs:
           node-version: '18'
 
       - name: Create Electron App
-        shell: cmd
+        shell: powershell
         run: |
-          mkdir electron_app
-          cd electron_app
+          New-Item -ItemType Directory -Force -Path "electron_app/app"
           
-          # Create app directory and copy files (EXCLUDING node_modules and original package.json)
-          mkdir app
-          robocopy "..\frontend" "app" /E /XD node_modules /XF package.json package-lock.json *.exe *.apk || if %errorlevel% LSS 8 (exit 0) else (exit %errorlevel%)
+          # Copy frontend files (EXCLUDING node_modules, package files, and binaries)
+          # We use Get-ChildItem and Copy-Item for maximum precision on Windows
+          Get-ChildItem -Path "frontend" -Exclude "node_modules", "package.json", "package-lock.json", "*.exe", "*.apk" | Copy-Item -Destination "electron_app/app" -Recurse -Force
+          
+          # Explicitly ensure no package.json exists in the app folder to prevent electron-builder confusion
+          if (Test-Path "electron_app/app/package.json") { Remove-Item "electron_app/app/package.json" -Force }
           
           # Handle HTML redirection for Electron
-          # Use copy instead of move to avoid "file not found" errors if already renamed
-          copy "app\index.html" "app\defense_board.html"
-          copy "app\unified.html" "app\index.html"
+          Copy-Item "electron_app/app/index.html" "electron_app/app/defense_board.html" -Force
+          Copy-Item "electron_app/app/unified.html" "electron_app/app/index.html" -Force
           
-          # Generate package.json using Node (more robust than echo)
-          echo const fs = require('fs'); > gen_pkg.js
-          echo const pkg = { >> gen_pkg.js
-          echo   name: 'ironwall-desktop', >> gen_pkg.js
-          echo   version: '1.0.0', >> gen_pkg.js
-          echo   description: 'IronWall+ Next-Gen Defense', >> gen_pkg.js
-          echo   main: 'main.js', >> gen_pkg.js
-          echo   author: 'Aditya-9-6', >> gen_pkg.js
-          echo   license: 'MIT', >> gen_pkg.js
-          echo   scripts: { build: 'electron-builder --win --x64' }, >> gen_pkg.js
-          echo   devDependencies: { electron: '^28.0.0', 'electron-builder': '^24.0.0' }, >> gen_pkg.js
-          echo   build: { appId: 'com.ironwall.desktop', productName: 'IronWall Plus Demo', directories: { output: 'dist' }, win: { target: 'portable' } } >> gen_pkg.js
-          echo }; >> gen_pkg.js
-          echo fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2)); >> gen_pkg.js
-          node gen_pkg.js
+          cd electron_app
           
-          # Create main.js using Node
-          echo const fs = require('fs'); > gen_main.js
-          echo const code = "const { app, BrowserWindow } = require('electron'); const path = require('path'); function createWindow () { const win = new BrowserWindow({ width: 1920, height: 1080, fullscreen: true, autoHideMenuBar: true, webPreferences: { nodeIntegration: true } }); win.loadFile('app/index.html'); } app.whenReady().then(createWindow);"; >> gen_main.js
-          echo fs.writeFileSync('main.js', code); >> gen_main.js
-          node gen_main.js
+          # Generate a pure package.json for electron-builder
+          $pkg = @{
+            name = "ironwall-desktop"
+            version = "1.0.0"
+            description = "IronWall+ Next-Gen Defense"
+            main = "main.js"
+            author = "Aditya-9-6"
+            license = "MIT"
+            scripts = @{ build = "electron-builder --win --x64 --no-install-rebuild" }
+            devDependencies = @{
+              electron = "^28.0.0"
+              "electron-builder" = "^24.0.0"
+            }
+            build = @{
+              appId = "com.ironwall.desktop"
+              productName = "IronWall Plus"
+              directories = @{ output = "dist" }
+              win = @{ target = "portable" }
+              publish = $null
+            }
+          }
+          $pkg | ConvertTo-Json -Depth 10 | Out-File -FilePath "package.json" -Encoding utf8
           
-          # Install dependencies
+          # Create main.js
+          $code = @"
+          const { app, BrowserWindow } = require('electron');
+          const path = require('path');
+          function createWindow () {
+            const win = new BrowserWindow({
+              width: 1920,
+              height: 1080,
+              fullscreen: true,
+              autoHideMenuBar: true,
+              webPreferences: { nodeIntegration: true, contextIsolation: false }
+            });
+            win.loadFile('app/index.html');
+          }
+          app.whenReady().then(createWindow);
+          app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+          "@
+          $code | Out-File -FilePath "main.js" -Encoding utf8
+          
+          # Install dependencies with explicit timeout prevention
           npm install --save-dev electron electron-builder
 
       - name: Build Windows .EXE

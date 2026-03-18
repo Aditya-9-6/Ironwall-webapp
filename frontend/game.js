@@ -27,7 +27,7 @@ if (wsParam) {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     WS_URL = `${protocol}//${window.location.host}/ws`;
 }
-const CORE_RADIUS = 54;
+let CORE_RADIUS = 54;
 const PARTICLE_COUNT = 18;
 
 // ── AI Debrief Messages (sourced from IronWall+ README + Phi-3 Battle Narratives) ────────
@@ -334,6 +334,8 @@ function resizeCanvas() {
     const H = arena.clientHeight;
     canvas.width = glitch.width = W;
     canvas.height = glitch.height = H;
+    // Dynamic core scaling based on height (split-screen mode check)
+    CORE_RADIUS = Math.max(30, Math.min(54, H * 0.15));
     if (gl) { gl.viewport(0, 0, W, H); }
     initBgStars();
 }
@@ -564,7 +566,7 @@ function drawCoreServer(t) {
 
     ctx.save();
     for (let ring = 1; ring <= 3; ring++) {
-        const ringR = R + ring * 30;
+        const ringR = R + ring * (R * 0.55); // Dynamic ring spacing
         const rotSpeed = ring * 0.003 * (ring % 2 === 0 ? 1 : -1);
         const segments = ring * 6;
         ctx.save();
@@ -621,8 +623,10 @@ function drawCoreServer(t) {
     innerGrad.addColorStop(1, 'rgba(3,3,8,0.85)');
     ctx.fillStyle = innerGrad;
     ctx.fill();
-
-    ctx.font = `bold 10px 'Share Tech Mono', monospace`;
+    
+    // Dynamic font size
+    const fontSize = Math.max(8, R * 0.18);
+    ctx.font = `bold ${fontSize}px 'Share Tech Mono', monospace`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = coreColor;
@@ -1103,7 +1107,34 @@ function loop(t) {
         lastHUDUpdate = t;
     }
 }
-
+ 
+ // ── Inter-Frame Navigation Proxy (Unified Mode) ─────────────────────────────
+ function initNavProxy() {
+     // Check if we are in an iframe
+     const inIframe = window.self !== window.top;
+     if (!inIframe) return;
+ 
+     // Override the navigation buttons
+     const navButtons = {
+         'unified-btn': 'split',
+         'red-team-btn': 'attack'
+     };
+ 
+     Object.entries(navButtons).forEach(([id, view]) => {
+         const btn = document.getElementById(id);
+         if (btn) {
+             // Remove inline onclick to prevent default navigation
+             btn.removeAttribute('onclick');
+             btn.onclick = (e) => {
+                 e.preventDefault();
+                 window.parent.postMessage({ type: 'SET_VIEW', mode: view }, '*');
+             };
+         }
+     });
+ }
+ 
+ initNavProxy();
+ 
 // ── Boot ────────────────────────────────────────────────────────────────────
 connectWS();
 requestAnimationFrame(loop);
@@ -1348,9 +1379,12 @@ if (replayBtn) {
                     chip.textContent = entry.type.split('_')[0];
                     feed.appendChild(chip);
                 }
-                // Re-trigger map ping and sound
+                // Re-trigger map ping, sound, and packet animation
                 spawnWorldMapPing(entry.type);
                 playAttackSound(entry.type, audio.ctx);
+                const p = new Packet('threat', { attack_type: entry.type });
+                state.packets.push(p);
+                
                 state.heatRingIntensity = Math.min(1, state.heatRingIntensity + 0.25);
                 if (i === state.replayLog.length - 1) {
                     setTimeout(() => {

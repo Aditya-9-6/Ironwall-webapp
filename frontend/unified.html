@@ -53,6 +53,8 @@
             font-family: 'Share Tech Mono', monospace;
             font-size: 0.8rem;
             color: var(--neon-cyan);
+            display: flex;
+            align-items: center;
         }
 
         .header-status span {
@@ -140,26 +142,23 @@
 
         /* Controls */
         .floating-controls {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
             display: flex;
-            gap: 15px;
-            z-index: 110;
+            gap: 10px;
+            margin-right: 20px;
         }
 
         .control-btn {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 245, 255, 0.05);
             border: 1px solid var(--neon-cyan);
             color: var(--neon-cyan);
-            padding: 8px 15px;
+            padding: 4px 12px;
             font-family: 'Share Tech Mono', monospace;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             cursor: pointer;
             transition: all 0.2s;
             text-transform: uppercase;
             letter-spacing: 1px;
+            border-radius: 4px;
         }
 
         .control-btn:hover {
@@ -199,6 +198,11 @@
         <div class="header-logo">IRONWALL+ <span style="font-size: 0.7rem; opacity: 0.6;">UNIFIED COMMAND CENTER</span>
         </div>
         <div class="header-status">
+            <div class="floating-controls">
+                <button class="control-btn" onclick="setView('defense')">Defense Focus</button>
+                <button class="control-btn active" onclick="setView('split')">Split Screen</button>
+                <button class="control-btn" onclick="setView('attack')">Attack Focus</button>
+            </div>
             <span class="blink">● SYSTEM ONLINE</span>
             <span>OS: TITAN-KERNEL v4.0</span>
             <span id="timer">00:00:00</span>
@@ -217,11 +221,6 @@
         </section>
     </main>
 
-    <div class="floating-controls">
-        <button class="control-btn" onclick="setView('defense')">Defense Focus</button>
-        <button class="control-btn active" onclick="setView('split')">Split Screen</button>
-        <button class="control-btn" onclick="setView('attack')">Attack Focus</button>
-    </div>
 
     <script>
         // Set focus mode
@@ -263,6 +262,25 @@
             if (def.audio) def.audio.init();
             if (atk.audio) atk.audio.init();
         }, { once: true });
+
+        // Auto-activate LLM in Unified (Mix) mode
+        window.addEventListener('load', () => {
+            const defFrame = document.getElementById('defense-frame');
+            defFrame.addEventListener('load', () => {
+                const defDoc = defFrame.contentDocument || defFrame.contentWindow.document;
+                const aiBtn = defDoc.getElementById('ai-chat-toggle-btn');
+                if (aiBtn) {
+                    console.log("[Unified] Auto-activating AI Consultant panel...");
+                    aiBtn.click();
+                }
+            });
+        });
+        // Listen for navigation messages from children (Defense HUD buttons)
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'SET_VIEW') {
+                setView(event.data.mode);
+            }
+        });
     </script>
 </body>
 
