@@ -357,6 +357,17 @@
             document.getElementById('panel-connect').classList.add('hidden');
             document.getElementById('panel-roles').classList.remove('hidden');
         }
+
+        // ── Auto-Join via URL Parameter ──
+        window.addEventListener('load', () => {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            if (code && code.length === 4) {
+                document.getElementById('join-code').value = code;
+                console.log(`[Lobby] Auto-joining code: ${code}`);
+                connectHost(); // Using the correct function name
+            }
+        });
     </script>
 
 </body>

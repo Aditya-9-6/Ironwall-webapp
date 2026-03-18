@@ -1148,6 +1148,22 @@ async function fetchLobbyCode() {
         if (badge && val && data.code) {
             val.textContent = data.code;
             badge.style.display = 'flex';
+
+            const shareBtn = document.getElementById('share-lobby-btn');
+            if (shareBtn) {
+                shareBtn.onclick = () => {
+                    const joinUrl = window.location.origin + '/lobby.html?code=' + data.code;
+                    navigator.clipboard.writeText(joinUrl).then(() => {
+                        const originalColor = shareBtn.style.color;
+                        shareBtn.style.color = 'var(--neon-green)';
+                        shareBtn.title = 'COPIED!';
+                        setTimeout(() => {
+                            shareBtn.style.color = originalColor;
+                            shareBtn.title = 'Share Join Link';
+                        }, 2000);
+                    });
+                };
+            }
         }
     } catch (e) {
         console.warn('Lobby code not available (running in standalone/production mode?)');

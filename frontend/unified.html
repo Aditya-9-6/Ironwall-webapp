@@ -201,6 +201,9 @@
             <div id="lobby-code-badge" style="color:#bf5fff; border-right: 1px solid rgba(191,95,255,0.3); padding-right:12px; margin-right:12px; display:none; align-items:center; gap:8px;">
                 <span style="opacity:0.6; font-size:0.7rem; font-family: 'Share Tech Mono', monospace;">LOBBY:</span>
                 <span id="lobby-code-val" style="font-weight:900; letter-spacing:2px; font-size:0.9rem;">----</span>
+                <button id="share-lobby-btn" title="Share Join Link" style="background:none; border:none; color:inherit; cursor:pointer; padding:2px; display:flex; align-items:center; opacity:0.7; transition:opacity 0.2s;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+                </button>
             </div>
             <div class="floating-controls">
                 <button class="control-btn" onclick="setView('defense')">Defense Focus</button>
@@ -289,6 +292,22 @@
                 if (badge && val && data.code) {
                     val.textContent = data.code;
                     badge.style.display = 'flex';
+
+                    const shareBtn = document.getElementById('share-lobby-btn');
+                    if (shareBtn) {
+                        shareBtn.onclick = () => {
+                            const joinUrl = window.location.origin + '/lobby.html?code=' + data.code;
+                            navigator.clipboard.writeText(joinUrl).then(() => {
+                                const originalColor = shareBtn.style.color;
+                                shareBtn.style.color = '#39ff14'; // neon-green
+                                shareBtn.title = 'COPIED!';
+                                setTimeout(() => {
+                                    shareBtn.style.color = originalColor;
+                                    shareBtn.title = 'Share Join Link';
+                                }, 2000);
+                            });
+                        };
+                    }
                 }
             } catch (e) {
                 console.warn('Lobby code not available');
