@@ -510,10 +510,18 @@ async fn ai_proxy(
     // However, it provides a consistent API structure for the demo.
     
     let method = req.method().clone();
-    let body = req.into_body();
+    let axum_body = req.into_body();
+    
+    let body_bytes = match axum::body::to_bytes(axum_body, usize::MAX).await {
+        Ok(b) => b,
+        Err(_) => return axum::response::Response::builder()
+            .status(500)
+            .body(axum::body::Body::empty())
+            .unwrap(),
+    };
 
     let res = client.request(method, target_url)
-        .body(body)
+        .body(body_bytes)
         .send()
         .await;
 
