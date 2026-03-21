@@ -550,7 +550,9 @@ async fn ai_proxy(
     let client = reqwest::Client::new();
     let target_url = format!("http://localhost:11434/api/{}", path);
     
-    let method = req.method().clone();
+    // Explicitly convert axum method to reqwest method if needed by jumping through string representation,
+    // though in matching http versions they are the same type.
+    let method = reqwest::Method::from_bytes(req.method().as_str().as_bytes()).unwrap_or(reqwest::Method::POST);
     let axum_body = req.into_body();
     
     let body_bytes = match axum::body::to_bytes(axum_body, usize::MAX).await {
@@ -561,7 +563,7 @@ async fn ai_proxy(
             .unwrap(),
     };
 
-    let res = client.request(method, target_url)
+    let res = client.request(method, &target_url)
         .body(body_bytes)
         .send()
         .await;
@@ -569,7 +571,7 @@ async fn ai_proxy(
     match res {
         Ok(resp) => {
             let status = resp.status();
-            let body: bytes::Bytes = resp.bytes().await.unwrap_or_default();
+            let body = resp.bytes().await.unwrap_or(bytes::Bytes::new());
             axum::response::Response::builder()
                 .status(status)
                 .body(axum::body::Body::from(body))

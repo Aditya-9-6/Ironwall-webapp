@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 title 🛡️ IRONWALL+ TOTAL DEFENSE SYSTEM 🛡️
 color 0b
-
+set CARGO_TARGET_DIR=C:\Users\om laptop house\AppData\Local\ironwall-target
 echo.
 echo    ██╗██████╗  ██████╗ ███╗   ██╗██╗    ██╗ █████╗ ██╗     ██╗     ██╗
 echo    ██║██╔══██╗██╔═══██╗████╗  ██║██║    ██║██╔══██╗██║     ██║     ██║
@@ -25,26 +25,22 @@ set IP=%IP: =%
 echo 📡 NETWORK DETECTED: %IP%
 echo.
 
-:: 1. Start the Rust Backend via Watchdog (auto-restarts in 1s on any crash)
-echo [1/2] Launching IronWall+ Watchdog (keeps backend alive forever)...
+:: 1. Cleanup old instances
+echo [1/3] Terminating persistent background instances (Node + Rust)...
 taskkill /F /IM ironwall-gamethon.exe /T >nul 2>&1
-start "IronWall+ Backend [DO NOT CLOSE]" powershell -NoExit -ExecutionPolicy Bypass -File "g:\My Drive\IronWall-Gamethon\watchdog.ps1"
+taskkill /F /IM node.exe /T >nul 2>&1
 
-:: 2. Start the Frontend Server
-echo [2/3] 🔷 Serving Frontend UI (Port 3000)...
-cd frontend
-start "🛡️ IronWall Frontend" cmd /k "node serve.js"
-cd ..
+:: 2. Start the Rust Backend (WAF + Engine)
+echo [2/3] Launching Unified WAF Backend (Pingora + Axum)...
+cd /d "%~dp0backend"
+start "IronWall+ Unified Backend" cmd /c "cargo run --release"
 
-:: 3. Start Ollama AI Consultant
-echo [3/3] 🤖 Starting Ollama AI Consultant (Phi-3)...
-start "Ollama Engine (AI Consultant)" cmd /k "title Ollama Engine && ollama serve"
-
-:: 4. Open the Launcher
+:: 3. Open the Dashboard
 echo.
-echo 🚀 Opening Launcher Portal in 5 seconds...
+echo 🚀 Opening Unified Command Center (Port 8080) in 5 seconds...
 timeout /t 5 >nul
-start http://localhost:3000/launcher.html
+start http://localhost:8080/
+
 
 echo.
 echo ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -52,11 +48,11 @@ echo  ✅ SYSTEM IS LIVE!
 echo.
 echo  🖥️  LAPTOP: Drag the browser windows to your monitors.
 echo  📱  MOBILE: Scan or type this on your phone:
-echo      http://%IP%:3000/launcher.html
+echo      http://%IP%:8080/
 echo.
 echo  📱  DIRECT ATTACK PANEL (for Phone):
 echo  =============================================================
-echo  http://%IP%:3000/attacker.html
+echo  http://%IP%:8080/attacker.html
 echo  =============================================================
 echo.
 echo  ⚠️  IF YOU SEE "RECONNECTING":
