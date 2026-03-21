@@ -666,8 +666,7 @@ async fn main() -> Result<()> {
     // ── Layer 1: Pingora WAF Proxy (Public Entry Point) ───────────
     let pingora_handle = tokio::task::spawn_blocking(move || {
         // Use fixed opts to avoid Render passing unwanted args to Pingora
-        use clap::Parser;
-        let opt = Opt::from_iter(vec!["ironwall"]);
+        let opt = pingora_core::server::configuration::Opt::default();
         let mut server = Server::new(Some(opt)).expect("Pingora server init failed");
         server.bootstrap();
 
