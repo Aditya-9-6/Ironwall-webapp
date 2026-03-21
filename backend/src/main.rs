@@ -489,48 +489,48 @@ async fn get_frontend_path() -> std::path::PathBuf {
     }
 }
 
-async fn serve_root() -> impl IntoResponse {
-    let path = get_frontend_path().await.join("index.html");
+async fn serve_root(State(state): State<AppState>) -> impl IntoResponse {
+    let path = std::path::Path::new(&state.frontend_path).join("index.html");
     match tokio::fs::read_to_string(path).await {
         Ok(html) => axum::response::Html(html).into_response(),
         Err(_) => axum::response::Html("<h1>404: Static index missing</h1>").into_response(),
     }
 }
 
-async fn serve_unified() -> impl IntoResponse {
-    let path = get_frontend_path().await.join("unified.html");
+async fn serve_unified(State(state): State<AppState>) -> impl IntoResponse {
+    let path = std::path::Path::new(&state.frontend_path).join("unified.html");
     match tokio::fs::read_to_string(path).await {
         Ok(html) => axum::response::Html(html).into_response(),
         Err(_) => axum::response::Html("<h1>404: Static unified missing</h1>").into_response(),
     }
 }
 
-async fn serve_attacker() -> impl IntoResponse {
-    let path = get_frontend_path().await.join("attacker.html");
+async fn serve_attacker(State(state): State<AppState>) -> impl IntoResponse {
+    let path = std::path::Path::new(&state.frontend_path).join("attacker.html");
     match tokio::fs::read_to_string(path).await {
         Ok(html) => axum::response::Html(html).into_response(),
         Err(_) => axum::response::Html("<h1>404: Static attacker missing</h1>").into_response(),
     }
 }
 
-async fn serve_lobby() -> impl IntoResponse {
-    let path = get_frontend_path().await.join("lobby.html");
+async fn serve_lobby(State(state): State<AppState>) -> impl IntoResponse {
+    let path = std::path::Path::new(&state.frontend_path).join("lobby.html");
     match tokio::fs::read_to_string(path).await {
         Ok(html) => axum::response::Html(html).into_response(),
         Err(_) => axum::response::Html("<h1>404: Static lobby missing</h1>").into_response(),
     }
 }
 
-async fn serve_defense() -> impl IntoResponse {
-    let path = get_frontend_path().await.join("defense.html");
+async fn serve_defense(State(state): State<AppState>) -> impl IntoResponse {
+    let path = std::path::Path::new(&state.frontend_path).join("defense.html");
     match tokio::fs::read_to_string(path).await {
         Ok(html) => axum::response::Html(html).into_response(),
         Err(_) => axum::response::Html("<h1>404: Defense panel not found</h1>").into_response(),
     }
 }
 
-async fn serve_demo() -> impl IntoResponse {
-    let path = get_frontend_path().await.join("demo.html");
+async fn serve_demo(State(state): State<AppState>) -> impl IntoResponse {
+    let path = std::path::Path::new(&state.frontend_path).join("demo.html");
     match tokio::fs::read_to_string(path).await {
         Ok(html) => axum::response::Html(html).into_response(),
         Err(_) => axum::response::Html("<h1>404: Demo page not found</h1>").into_response(),
@@ -549,8 +549,6 @@ async fn ai_proxy(
 ) -> impl IntoResponse {
     let client = reqwest::Client::new();
     let target_url = format!("http://localhost:11434/api/{}", path);
-    // Note: In cloud mode, this will still fail unless Ollama is on the server.
-    // However, it provides a consistent API structure for the demo.
     
     let method = req.method().clone();
     let axum_body = req.into_body();
@@ -578,21 +576,19 @@ async fn ai_proxy(
                 .unwrap()
         }
         Err(_) => {
-            // 🤖 CLOUD SIMULATION FALLBACK: If local Ollama is offline, return a cyber-simulation response
+            // 🤖 CLOUD SIMULATION FALLBACK
             let mock_response = serde_json::json!({
                 "model": "ironwall-cloud-sim",
                 "message": {
                     "role": "assistant",
-                    "content": "⚡ [CLOAKED RESPONSE] IronWall+ AI Consultant is operating in autonomous cloud-sim mode. I have detected your query and verified the system's neural defense layers. All modules are optimal. Ready for the next threat iteration."
+                    "content": "⚡ [IronWall+ Cloud AI] Analyzing your query... All defense layers are optimal. Ask me about SQL injection, XSS, DDoS, or any cyber threat."
                 },
                 "done": true
             });
-            // CRITICAL: Append newline for NDJSON streaming decoder in chatbot.js
-            let body_str = format!("{}\n", mock_response.to_string());
             axum::response::Response::builder()
                 .status(200)
                 .header("Content-Type", "application/json")
-                .body(axum::body::Body::from(body_str))
+                .body(axum::body::Body::from(mock_response.to_string()))
                 .unwrap()
         }
     }
@@ -646,8 +642,8 @@ async fn main() -> Result<()> {
         .route("/ws", get(ws_handler))
         .route("/health", get(health))
         .route("/api/ai/*path", axum::routing::any(ai_proxy))
-        .nest_service("/assets", ServeDir::new(frontend_path.clone())) 
-        .fallback_service(ServeDir::new(frontend_path.clone()).fallback(get(serve_root))) 
+        .nest_service("/assets", ServeDir::new(frontend_path.clone()))
+        .fallback_service(ServeDir::new(frontend_path.clone()))
         .layer(
             CorsLayer::new()
                 .allow_origin(Any)
